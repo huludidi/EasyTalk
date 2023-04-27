@@ -1,0 +1,49 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "id": "110000",
+            "properties": {
+                "name": "北京市"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            116.011934,
+                            40.263645
+                        ],
+                        [
+                            116.007415,
+                            40.261714
+                        ]
+                    ] 
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "120000",
+            "properties": {
+                "name": "天津市"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            117.218707,
+                            39.125595
+                        ],
+                        [
+                            117.219379,
+                            39.114819
+                        ]
+                    ]
+                ]
+            }
+        }
+    ]
+}
