@@ -11,10 +11,6 @@
       class="cust-dialog"
       @close="close"
     >
-      custom-class="cust-dialog"
-
-      <!-- class="cust-dialog" -->
-
       <div class="dialog-body">
         <slot></slot>
       </div>

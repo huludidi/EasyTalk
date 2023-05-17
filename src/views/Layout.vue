@@ -5,7 +5,7 @@
         class="header-content"
         :style="{ width: proxy.globalInfo.bodyWidth + 'px' }"
       >
-        <router-link to=""  @click="goFirstPage()" class="logo">
+        <router-link to="" @click="goFirstPage()" class="logo">
           <span
             v-for="(item, index) in logoInfo"
             :key="index"
@@ -16,20 +16,32 @@
         <!-- 板块信息 -->
         <div class="menu-panel">
           <v-chip-group v-model="selection" mandatory>
-            <v-chip color="#3285FF" to="/" :value='0' @click="allHandler()">全部 </v-chip>
+            <v-chip color="#3285FF" to="/" :value="0" @click="allHandler()"
+              >全部
+            </v-chip>
             <el-popover
               placement="bottom-start"
               :width="250"
               trigger="hover"
               disable="false"
-              v-for="(item , key) in boardList"
+              v-for="(item, key) in boardList"
               :key="key"
             >
               <template #reference>
-                <v-chip :value="item.board_id" color="#FB3624" @click="boardClickHandler(item)">{{ item.board_name }} </v-chip>
+                <v-chip
+                  :value="item.board_id"
+                  color="#FB3624"
+                  @click="boardClickHandler(item)"
+                  >{{ item.board_name }}
+                </v-chip>
               </template>
-              <v-chip-group v-if="item.children" >
-                <v-chip v-for="(child) in item.children" :key="child.board_id" @click="subBoardClickHandler(child)">{{child.board_name}} </v-chip>
+              <v-chip-group v-if="item.children">
+                <v-chip
+                  v-for="child in item.children"
+                  :key="child.board_id"
+                  @click="subBoardClickHandler(child)"
+                  >{{ child.board_name }}
+                </v-chip>
               </v-chip-group>
             </el-popover>
             <v-chip color="#25B24E">资源 </v-chip>
@@ -88,7 +100,12 @@
               </el-dropdown>
             </div>
             <div class="user-avatar">
-              <avatar :userInfo="userInfo"></avatar>
+              <avatar
+                :userInfo="userInfo"
+                :class="`${isHovering?'animate__animated animate__rotateIn':''}`"
+                @mouseover="onMouseOver"
+                @mouseleave="onMouseLeave"
+              ></avatar>
             </div>
           </div>
           <v-btn-group
@@ -207,7 +224,7 @@ onMounted(() => {
 const getUserInfo = async () => {
   let result = await proxy.Request({
     url: api.getUserInfo,
-    showLoading:false
+    showLoading: false,
   });
   if (!result) {
     return;
@@ -219,8 +236,7 @@ const boardList = ref([]);
 const loadBoard = async () => {
   let result = await proxy.Request({
     url: api.loadBoard,
-    showLoading:false
-
+    showLoading: false,
   });
   if (!result) {
     return;
@@ -229,29 +245,31 @@ const loadBoard = async () => {
 };
 loadBoard();
 // 板块点击跳转
-const selection=ref(0)
-const subselection=ref(0)
+const selection = ref(0);
+const subselection = ref(0);
 watch(
-  ()=>store.state.activeBoard,
-  (newVal,oldVal)=>{
-    selection.value=newVal
+  () => store.state.activeBoard,
+  (newVal, oldVal) => {
+    if (newVal != oldVal) {
+      selection.value = newVal;
+    }
   }
-)
-const allHandler=()=>{
-  store.commit("setActiveBoard",0)
-}
-const boardClickHandler=(board)=>{
+);
+const allHandler = () => {
+  store.commit("setActiveBoard", 0);
+};
+const boardClickHandler = (board) => {
   router.push(`/forum/${board.board_id}`);
-}
-const subBoardClickHandler=(subBoard)=>{
+};
+const subBoardClickHandler = (subBoard) => {
   router.push(`/forum/${subBoard.p_board_id}/${subBoard.board_id}`);
-  store.commit("setActiveBoard",subBoard.p_board_id)
-}
+  store.commit("setActiveBoard", subBoard.p_board_id);
+};
 // 点击图标跳转
-const goFirstPage=()=>{
-  store.commit("setActiveBoard",0)
-  router.push("/")
-}
+const goFirstPage = () => {
+  store.commit("setActiveBoard", 0);
+  router.push("/");
+};
 // 监听登录用户信息
 const userInfo = ref({});
 watch(
@@ -279,15 +297,24 @@ watch(
 
 // 发帖
 const newPost = () => {
-  if(!store.getters.getLoginUserInfo){
+  if (!store.getters.getLoginUserInfo) {
     loginAndregister(1);
-  }else{
+  } else {
     router.push("/newPost");
   }
 };
 // 跳转消息中心
 const gotoMessage = (type) => {
   router.push(`/user/message/${type}`);
+};
+
+
+const isHovering = ref(false);
+const onMouseOver = () => {
+  isHovering.value = true;
+};
+const onMouseLeave = () => {
+  isHovering.value = false;
 };
 </script>
 

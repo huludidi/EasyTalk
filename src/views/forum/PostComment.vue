@@ -1,7 +1,7 @@
 <template>
   <div class="post-comment-panel">
-    <v-avatar :style="{background:'#f0f0f0'}">
-      <v-img v-if="userId" :src="proxy.globalInfo.avatarUrl+userId+'.jpg'"></v-img>
+    <v-avatar :style="{ background: '#f0f0f0' }">
+      <v-img v-if="userId" :src="proxy.globalInfo.avatarUrl + userId"></v-img>
       <div v-else class="no-login">未登录</div>
     </v-avatar>
     <div class="comment-form">
@@ -54,10 +54,11 @@
 import CommentImage from "./CommentImage.vue";
 import { ref, getCurrentInstance, watch } from "vue";
 import { useStore } from "vuex";
+const store = useStore();
 const { proxy } = getCurrentInstance();
-const api={
-  postComment:"/comment/postComment"
-}
+const api = {
+  postComment: "/comment/postComment",
+};
 const props = defineProps({
   userId: {
     type: String,
@@ -69,15 +70,15 @@ const props = defineProps({
     type: String,
     default: "请文明发言，做一个棒棒的留学生哦~",
   },
-  articleId:{
-    type:String,
+  articleId: {
+    type: String,
   },
-  pCommentId:{
-    type:String
+  pCommentId: {
+    type: String,
   },
-  replyUserId:{
-    type:String
-  }
+  replyUserId: {
+    type: String,
+  },
 });
 
 // form信息
@@ -93,33 +94,46 @@ const formDataRef = ref();
 const rules = {
   content: [
     { required: true, message: "我还是空的呢~", validator: checkPostComment },
-    {min:3,message:"请多敲点字再发布吧~"}
+    { min: 3, message: "请多敲点字再发布吧~" },
   ],
 };
-const emit=defineEmits(['postCommentFinish'])
+const emit = defineEmits(["postCommentFinish"]);
 
 //发布评论
 const postCommentDo = () => {
   formDataRef.value.validate(async (valid) => {
+    if (!props.userId) {
+      store.commit("showLogin", true);
+      return;
+    } else {
+      if (!store.getters.getLoginUserInfo.school) {
+        ElMessageBox.alert("请先绑定学校", "提示", {
+          "show-close": false,
+          callback: (action) => {
+            router.go(-1);
+          },
+        });
+      }
+    }
     if (!valid) {
       return;
     }
-    let params=Object.assign({},formData.value);
-    params.articleId=props.articleId;
-    params.pCommentId=props.pCommentId;
-    params.replyUserId=props.replyUserId;
-    let result=await proxy.Request({
-      url:api.postComment,
-      params:params,
-      showLoading:false,
-    })
-    if(!result){
-      return
+    let params = Object.assign({}, formData.value);
+    params.articleId = props.articleId;
+    params.pCommentId = props.pCommentId;
+    params.replyUserId = props.replyUserId;
+    let result = await proxy.Request({
+      url: api.postComment,
+      params: params,
+      showLoading: false,
+    });
+    if (!result) {
+      return;
     }
-    proxy.Message.success("评论发表成功")
+    proxy.Message.success("评论发表成功");
     formDataRef.value.resetFields();
-    removeCommentImg()
-    emit("postCommentFinish",result.data);
+    removeCommentImg();
+    emit("postCommentFinish", result.data);
   });
 };
 

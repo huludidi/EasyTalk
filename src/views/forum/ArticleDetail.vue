@@ -24,11 +24,7 @@
                 <div class="user-info">
                   <v-avatar size="x-large">
                     <v-img
-                      :src="
-                        proxy.globalInfo.avatarUrl +
-                        articleInfo.author_id +
-                        '.jpg'
-                      "
+                      :src="proxy.globalInfo.avatarUrl + articleInfo.author_id"
                       alt="John"
                     ></v-img>
                   </v-avatar>
@@ -40,26 +36,40 @@
                     >
                     <div class="meta-box">
                       <span> {{ articleInfo.post_time }}</span>
+                      <div class="post-address">
+                        <span :style="{ 'font-size': '14px' }">发布于 </span>
+                        <span>
+                          {{ address.country_name }}
+                          -
+                          {{ address.region }}
+                        </span>
+                      </div>
                       <div class="views-count">
                         <v-icon icon="mdi mdi-eye-outline"> </v-icon>
                         <span>{{ articleInfo.read_count }}</span>
                       </div>
+                      <router-link
+                        v-if="articleInfo.author_id == currentUserInfo.userId"
+                        :to="`/editPost/${articleInfo.article_id}`"
+                        class="a-link btn-edit"
+                      >
+                        <span class="iconfont icon-edit">编辑</span>
+                      </router-link>
                     </div>
                   </div>
                 </div>
                 <v-divider class="border-opacity-40"></v-divider>
                 <!-- 文章详细 -->
-                <el-text class="mx-1" tag="p">
-                  <div class="detail" id="detail" v-html="articleInfo.content"></div>
-                </el-text>
+                <div
+                  class="detail font-weight-medium"
+                  id="detail"
+                  v-html="articleInfo.content"
+                ></div>
               </div>
             </v-sheet>
             <!-- 附件下载 -->
-            <v-sheet
-              class="pa-2 ma1"
-              v-if="attachmentInfo != null && attachmentInfo != {}"
-            >
-              <div class="attachment-panel" v-if="true" id="view-attachment">
+            <v-sheet class="pa-2 ma1" v-if="attachmentInfo.file_id">
+              <div class="attachment-panel" id="view-attachment">
                 <div class="title">附件</div>
                 <div class="attachment-info">
                   <v-icon class="item" icon="mdi-zip-box"></v-icon>
@@ -102,20 +112,20 @@
                     <v-avatar size="60px">
                       <v-img
                         :src="
-                          proxy.globalInfo.avatarUrl +
-                          articleInfo.author_id +
-                          '.jpg'
+                          proxy.globalInfo.avatarUrl + articleInfo.author_id
                         "
                       ></v-img>
                     </v-avatar>
                   </div>
                   <div class="nick-name">
-                    <span :style="{ 'font-size': '18px' }">{{
-                      authorInfo.nickName
-                    }}</span>
-                    <span :style="{ color: '#929292' }">{{
-                      authorInfo.school
-                    }}</span>
+                    <span :style="{ 'font-size': '18px' }">
+                      <v-icon icon="mdi-account-box" size="small"></v-icon>
+                      {{ authorInfo.nickName }}</span
+                    >
+                    <span :style="{ color: '#929292' }">
+                      <v-icon icon="mdi-school" size="small"></v-icon>
+                      {{ authorInfo.school }}</span
+                    >
                   </div>
                 </div>
                 <v-card-text>
@@ -208,12 +218,19 @@
 <script setup>
 import Schoolsort from "./Schoolsort.vue";
 import CommentList from "./CommentList.vue";
-import { ref, getCurrentInstance, onMounted, computed, nextTick } from "vue";
+import {
+  ref,
+  getCurrentInstance,
+  onMounted,
+  computed,
+  nextTick,
+  watch,
+} from "vue";
 import { useRouter, useRoute } from "vue-router";
 const { proxy } = getCurrentInstance();
 import { useStore } from "vuex";
 const store = useStore();
-const router = useRouter;
+const router = useRouter();
 const route = useRoute();
 const api = {
   getArticleDetail: "/forum/getArticleDetail",
@@ -221,7 +238,14 @@ const api = {
   downloadAttachment: "/api/forum/attachmentDownload",
   doLike: "/forum/doLike",
 };
-
+const currentUserInfo = ref({});
+watch(
+  () => store.state.loginUserInfo,
+  (newVal, oldVal) => {
+    currentUserInfo.value = newVal || {};
+  },
+  { immediate: true, deep: true }
+);
 // 获取面包屑数据
 const newarr = ref([]);
 const makeNewarr = (article) => {
@@ -294,14 +318,15 @@ const formattedSize = computed(() => {
   }
 });
 const downloadAttachment = async (info) => {
-  if (!store.getters.getLoginUserInfo) {
+  if (!currentUserInfo) {
     store.commit("showLogin", true);
     return;
   }
   document.location.href = api.downloadAttachment + "?fileId=" + info.file_id;
   attachmentInfo.value.download_count += 1;
 };
-
+// 文章发布地址
+const address = ref({});
 // 文章详情
 const articleInfo = ref({});
 const getArticleDetail = async (articleId) => {
@@ -316,11 +341,18 @@ const getArticleDetail = async (articleId) => {
     return;
   }
   articleInfo.value = result.data.forumArticle;
-  attachmentInfo.value = result.data.attachment;
+  address.value = JSON.parse(result.data.forumArticle.author_ip_address);
+  if (result.data.attachment != null) {
+    attachmentInfo.value = result.data.attachment;
+  }
   havelike.value = result.data.haveLike;
   getUserInfo(result.data.forumArticle.author_id);
   makeNewarr(result.data.forumArticle);
   imagePreview();
+
+  if (articleInfo.value.p_board_id != store.getters.getActiveBoard) {
+    store.commit("setActiveBoard", articleInfo.value.p_board_id);
+  }
 };
 onMounted(() => {
   getArticleDetail(route.params.articleId);
@@ -333,9 +365,9 @@ const goToPosition = (domId) => {
   document.querySelector("#" + domId).scrollIntoView();
 };
 // 发布评论后，更新数量
-const updateCommentCount=()=>{
-  articleInfo.value.comment_count+=1
-}
+const updateCommentCount = () => {
+  articleInfo.value.comment_count += 1;
+};
 // 文章图片预览
 const imageViewerRef = ref();
 const previewImgList = ref([]);
@@ -405,12 +437,19 @@ const imagePreview = () => {
           .views-count {
             display: flex;
             align-items: flex-end;
-            margin-left: 5px;
+            margin-left: 10px;
+            margin-right: 10px;
+          }
+          .post-address {
+            margin-left: 10px;
           }
         }
       }
     }
     .detail {
+      padding: 10px 0;
+      font-size: 20px;
+      line-height: 1.6;
       a {
         text-decoration: none;
         color: var(--link);
@@ -441,8 +480,8 @@ const imagePreview = () => {
     }
   }
   .user-intro {
-    .v-card-text{
-      padding: 0 0 5px 0 ;
+    .v-card-text {
+      padding: 0 0 5px 0;
     }
     .avatar-panel {
       display: flex;

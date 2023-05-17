@@ -1,9 +1,7 @@
 <template>
   <div class="comment-item">
     <v-avatar>
-      <v-img
-        :src="proxy.globalInfo.avatarUrl + commentData.user_id + '.jpg'"
-      ></v-img>
+      <v-img :src="proxy.globalInfo.avatarUrl + commentData.user_id"></v-img>
     </v-avatar>
     <div class="comment-info">
       <div class="nick-name">
@@ -19,7 +17,9 @@
         <CommentImage
           :style="{ 'margin-top': '10px' }"
           v-if="commentData.img_path"
-          :src="proxy.globalInfo.imageUrl + commentData.img_path.replace('.' , '_.')"
+          :src="
+            proxy.globalInfo.imageUrl + commentData.img_path.replace('.', '_.')
+          "
           :imgList="[proxy.globalInfo.imageUrl + commentData.img_path]"
         ></CommentImage>
       </div>
@@ -51,9 +51,7 @@
           :key="key"
         >
           <v-avatar>
-            <v-img
-              :src="proxy.globalInfo.avatarUrl + item.user_id + '.jpg'"
-            ></v-img>
+            <v-img :src="proxy.globalInfo.avatarUrl + item.user_id"></v-img>
           </v-avatar>
           <div class="comment-sub-info">
             <div class="nick-name">
@@ -64,7 +62,7 @@
                 >作者</span
               >
               <span class="reply-name">回复 @</span>
-              <span @click="gotoUcenter(item.reply_nick_name)" class="name">{{
+              <span @click="gotoUcenter(item.reply_user_id)" class="name">{{
                 item.reply_nick_name
               }}</span>
               <span>：</span>
@@ -114,6 +112,7 @@ import { ref, getCurrentInstance, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
 const { proxy } = getCurrentInstance();
+const store = useStore();
 const router = useRouter();
 const route = useRoute();
 const api = {
@@ -132,6 +131,19 @@ const props = defineProps({
 });
 // 点赞
 const doLike = async (data) => {
+  if (!props.currentUserId) {
+    store.commit("showLogin", true);
+    return;
+  } else {
+    if (!store.getters.getLoginUserInfo.school) {
+      ElMessageBox.alert("请前往用户中心绑定学校", "提示", {
+        "show-close": false,
+        callback: (action) => {
+          router.go(-1);
+        },
+      });
+    }
+  }
   let result = await proxy.Request({
     url: api.doLike,
     params: {

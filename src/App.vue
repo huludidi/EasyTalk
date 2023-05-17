@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app >
     <v-main>
       <el-config-provider :locale="locale" :message="config">
         <router-view />

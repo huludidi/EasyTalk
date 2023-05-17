@@ -9,6 +9,8 @@ import Confirm from './utils/Confirm'
 import VueCookies from 'vue-cookies'
 import { loadFonts } from './plugins/webfontloader'
 import ElementPlus from 'element-plus'
+// import animate from 'animate.css'
+import 'animate.css';
 import 'element-plus/dist/index.css'
 import '@/assets/icon/iconfont.css'
 import './assets/base.scss'
@@ -33,6 +35,8 @@ app.use(router)
 app.use(ElementPlus)
 app.use(vuetify)
 app.use(store)
+// app.use(animate)
+
 app.config.globalProperties.VueCookies = VueCookies
 app.config.globalProperties.globalInfo = {
     bodyWidth: 1100,

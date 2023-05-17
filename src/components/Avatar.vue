@@ -7,7 +7,7 @@
             <v-img
               alt="Avatar"
               cover
-              :src="proxy.globalInfo.avatarUrl + userInfo.userId + '.jpg'"
+              :src="proxy.globalInfo.avatarUrl + userInfo.userId"
             ></v-img>
           </v-avatar>
         </v-btn>
@@ -19,7 +19,7 @@
               <v-img
                 alt="Avatar"
                 cover
-                :src="proxy.globalInfo.avatarUrl + userInfo.userId + '.jpg'"
+                :src="proxy.globalInfo.avatarUrl + userInfo.userId"
               ></v-img>
             </v-avatar>
             <h2>{{ userInfo.nickName }}</h2>

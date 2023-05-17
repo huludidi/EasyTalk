@@ -91,6 +91,7 @@
               <v-btn
                 color="rgb(50, 133, 255)"
                 :style="{ width: '100%', color: '#fff' }"
+                @click="postHandler"
                 >保存</v-btn
               >
             </el-form-item>
@@ -111,6 +112,7 @@ import {
   watch,
   nextTick,
 } from "vue";
+import {ElMessageBox} from "element-plus";
 import { useRouter, useRoute } from "vue-router";
 const { proxy } = getCurrentInstance();
 const router = useRouter();
@@ -126,17 +128,69 @@ const htmlEditorHeight = window.innerHeight - 209;
 
 const formData = ref({});
 const formDataRef = ref();
+
 const checkBoard = (rule, value, callback) => {
-  if (value != null && value.lengtn < 2) {
+  if (value == null || value.length < 2) {
     callback(new Error("请选择二级板块"));
   } else {
     callback();
   }
 };
 const rules = {
-  title: [{ required: true, message: "请输入内容" }],
+  title: [{ required: true, message: "请输入标题" },
+  {max:150,message:"标题过长"}],
   boardIds: [{ required: true, message: "请选择板块", validator: checkBoard }],
   summary: [{ required: true, message: "请输入文章摘要" }],
+  content: [{ required: true, message: "请输入正文" }],
+};
+
+// 提交信息
+const postHandler = () => {
+  formDataRef.value.validate(async (valid) => {
+    if (!valid) {
+      return;
+    }
+    let params = {};
+    Object.assign(params, formData.value);
+    // 设置板块id
+    params.p_board_id = params.boardIds[0];
+    params.board_id = params.boardIds[1];
+    delete params.boardIds;
+    // 设置编辑器类型
+    params.editor_type = editorType.value;
+    // 获取内容
+    const contentText = params.content.replace(/<(?!img).*?>/g, "");
+    if (contentText == "") {
+      proxy.Message.warning("正文不能为空");
+    }
+    if (params.attachment != null) {
+      params.attachment_type = 1;
+    } else {
+      params.attachment_type = 0;
+    }
+    // 封面判断
+    if (!params.cover instanceof File) {
+      delete params.cover;
+    }
+    // 附件类型判断
+    if (!params.attachment instanceof File) {
+      delete params.attachment;
+    }
+    let result = await proxy.Request({
+      url:params.article_id?api.updateArticle:api.postArticle,
+      params:params,
+      showLoading:false,
+    })
+    if(!result){
+      return
+    }
+    if(result.data.audit){
+    proxy.Message.success("保存成功");
+    }else{
+      proxy.Message.error("此文章审核不通过，请注意内容及图片的合法性")
+    }
+    router.push(`/post/${result.data.article_id}`)
+  });
 };
 
 // 板块信息
@@ -169,7 +223,7 @@ const changeEditor = () => {
   });
 };
 
-// 判断新增/修改进行操作
+// 判断新增/修改,获取信息
 const articleId = ref(null);
 const getArticleDetail = () => {
   nextTick(async () => {
@@ -183,7 +237,7 @@ const getArticleDetail = () => {
           articleId: articleId.value,
         },
         showError: false,
-        errorCallback: () => {
+        errorCallback: (response) => {
           ElMessageBox.alert(response.error, "错误", {
             "show-close": false,
             callback: (action) => {
@@ -237,7 +291,7 @@ watch(
 );
 
 const setHtmlContent = (HTMLContent) => {
-  formData.value.content = htmlContent;
+  formData.value.content = HTMLContent;
 };
 </script>
 

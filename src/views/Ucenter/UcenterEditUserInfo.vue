@@ -1,5 +1,6 @@
 <template>
   <Dialog
+  top="30px"
     :show="dialogConfig.show"
     :title="dialogConfig.title"
     :buttons="dialogConfig.buttons"
@@ -7,12 +8,14 @@
     @close="dialogConfig.show = false"
     width="400px"
   >
-    <el-form :model="formData" :rules="rules" ref="formDataRef">
+    <el-form
+      :model="formData"
+      :rules="rules"
+      ref="formDataRef"
+      label-width="60px"
+    >
       <el-form-item label="昵称" prop="nickName">
-        <el-input
-          size="large"
-        >
-        </el-input>
+        <el-input size="large" v-model="formData.nickName"> </el-input>
       </el-form-item>
       <el-form-item label="头像" prop="avatar">
         <CoverUpload
@@ -22,22 +25,30 @@
       </el-form-item>
       <el-form-item label="性别" prop="sex">
         <el-radio-group v-model="formData.sex">
-          <el-radio :label="0">男</el-radio>
-          <el-radio :label="1">女</el-radio>
+          <el-radio :label="1">男</el-radio>
+          <el-radio :label="0">女</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="学校" prop="school">
-          <el-autocomplete
-        v-model="state2"
-        :fetch-suggestions="querySearch"
-        :trigger-on-focus="false"
-        clearable
-        class="inline-input w-50"
-        placeholder="请输入学校"
-        @select="handleSelect"
-      />
+        <el-autocomplete
+          v-model="formData.school"
+          :fetch-suggestions="querySearch"
+          :trigger-on-focus="false"
+          clearable
+          class="inline-input w-50"
+          placeholder="请输入学校"
+          @select="handleSelect"
+        />
       </el-form-item>
-      <el-form-item label="简介" prop="">
+      <el-form-item label="邮箱" prop="schoolEmail">
+        <el-input
+          v-model="formData.schoolEmail"
+          size="large"
+          placeholder="请输入您在学校的邮箱"
+        >
+        </el-input>
+      </el-form-item>
+      <el-form-item label="简介" prop="persondescription">
         <el-input
           clearable
           placeholder="请输入简介，让别人认识你！"
@@ -63,50 +74,75 @@ import {
   watch,
   nextTick,
 } from "vue";
+import { useRouter, useRoute } from "vue-router";
 const { proxy } = getCurrentInstance();
+const router = useRouter();
+const route = useRoute();
+const api={
+  updateUserInfo:"/ucenter/updateUserInfo"
+}
+const checkBoard = (rule, value, callback) => {
+  if (value == null || value.length < 2) {
+    callback(new Error("请选择二级板块"));
+  } else {
+    callback();
+  }
+};
+const rules = {
+  nickName: [
+    { required: true, message: "请输入昵称" },
+    { max: 15, message: "昵称过长" },
+  ],
+  school: [{ required: true, message: "请选择学校" }],
+  schoolEmail: [
+    { required: true, message: "请输入学校邮箱" },
+    { max: 100, message: "邮箱过长" },
+    { validator: proxy.Verify.schoolEmail, message: "请输入教育邮箱" },
+  ],
+};
+
 const formData = ref({});
 const formDataRef = ref();
 
 // 自动补全输入框
 interface RestaurantItem {
-  value: string
-  link: string
+  value: string;
+  link: string;
 }
-const state2 = ref('')
-const restaurants = ref<RestaurantItem[]>([])
+const state2 = ref("");
+const restaurants = ref<RestaurantItem[]>([]);
 const querySearch = (queryString: string, cb: any) => {
   const results = queryString
     ? restaurants.value.filter(createFilter(queryString))
-    : restaurants.value
+    : restaurants.value;
   // call callback function to return suggestions
-  cb(results)
-}
+  cb(results);
+};
 const createFilter = (queryString: string) => {
   return (restaurant: RestaurantItem) => {
     return (
       restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
-    )
-  }
-}
+    );
+  };
+};
 const loadAll = () => {
   return [
-    { value: 'vue', link: 'https://github.com/vuejs/vue' },
-    { value: 'element', link: 'https://github.com/ElemeFE/element' },
-    { value: 'cooking', link: 'https://github.com/ElemeFE/cooking' },
-    { value: 'mint-ui', link: 'https://github.com/ElemeFE/mint-ui' },
-    { value: 'vuex', link: 'https://github.com/vuejs/vuex' },
-    { value: 'vue-router', link: 'https://github.com/vuejs/vue-router' },
-    { value: 'babel', link: 'https://github.com/babel/babel' },
-  ]
-}
+    { value: "vue", link: "https://github.com/vuejs/vue" },
+    { value: "element", link: "https://github.com/ElemeFE/element" },
+    { value: "cooking", link: "https://github.com/ElemeFE/cooking" },
+    { value: "mint-ui", link: "https://github.com/ElemeFE/mint-ui" },
+    { value: "vuex", link: "https://github.com/vuejs/vuex" },
+    { value: "vue-router", link: "https://github.com/vuejs/vue-router" },
+    { value: "babel", link: "https://github.com/babel/babel" },
+  ];
+};
 const handleSelect = (item: RestaurantItem) => {
-  console.log(item)
-}
+  console.log(item);
+};
 
 onMounted(() => {
-  restaurants.value = loadAll()
-})
-
+  restaurants.value = loadAll();
+});
 
 const dialogConfig = reactive({
   show: false,
@@ -122,13 +158,37 @@ const dialogConfig = reactive({
   ],
 });
 
-const updateUserInfoHandler = () => {};
+const emit=defineEmits(["resetUserInfo"])
+const updateUserInfoHandler = () => {
+  formDataRef.value.validate(async (valid)=>{
+    if(!valid){
+      return
+    }
+    let params={}
+    Object.assign(params,formData.value);
+    let result = await proxy.Request({
+      url:api.updateUserInfo,
+      shwoLoading:false,
+      params,
+    });
+    if(!result){
+      return
+    }
+    dialogConfig.show=false;
+    if(params.avatar instanceof File){
+      router.go(0);
+    }
+    else{
+      emit("resetUserInfo",params)
+    }
+  })
+};
 
-const showEditUserInfoDialog = (userinfo) => {
+const showEditUserInfoDialog = (userInfo) => {
   dialogConfig.show = true;
   nextTick(() => {
     formDataRef.value.resetFields();
-    const dataInfo = JSON.parse(JSON.stringify(userinfo));
+    const dataInfo = JSON.parse(JSON.stringify(userInfo));
     dataInfo.avatar = {
       imageUrl: dataInfo.userId,
     };

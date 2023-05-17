@@ -39,7 +39,7 @@
             <v-sheet class="ma2">
               <v-card class="mx-auto" max-width="267px">
                 <v-img
-                  class="align-end text-white"
+                  class="align-end text-white animate__animated animate__fadeInDown animate_duration-9s"
                   src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
                   cover
                 >
@@ -159,8 +159,10 @@ watch(
     } else {
       pBoardId.value = null;
     }
+    articleListInfo.value.pageNo = 1;
     loadArticle();
-  }
+  },
+  { immediate: true, deep: true }
 );
 // 文章排序 0点赞最多 1评论最多
 const order = ref([]);
@@ -168,6 +170,7 @@ watch(
   () => order,
   (newVal, oldVal) => {
     orderType.value = order.value;
+    articleListInfo.value.pageNo = 1;
     loadArticle();
   },
   { immediate: true, deep: true }
@@ -182,6 +185,7 @@ watch(
     } else {
       filterType.value = filter.value;
     }
+    articleListInfo.value.pageNo = 1;
     loadArticle();
   },
   { immediate: true, deep: true }
@@ -198,9 +202,6 @@ const loadArticleData = async () => {
   }
   articleData.value = result.data;
 };
-loadArticleData();
-
-
 </script>
 
 <style lang="scss" scoped>

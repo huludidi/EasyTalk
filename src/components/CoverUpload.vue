@@ -54,7 +54,6 @@ const uploadImage = async (file) => {
   img.onload = ({ target }) => {
     localFile.value = target.result;
   };
-  localPreview.value = true;
   emit("update:modelValue", file);
 };
 </script>
