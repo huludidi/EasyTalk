@@ -7,7 +7,8 @@
   :initial-index="0"
   fit="scale-down"
   loading="lazy"
-  hiden-on-click-modal
+  :hiden-on-click-modal="true"
+  preview-teleported
   >
   </el-image>
 </template>
@@ -23,7 +24,7 @@ const props=defineProps({
 })
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .comment-img{
     width: 80px;
     height: 80px;

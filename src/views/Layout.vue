@@ -1,126 +1,114 @@
 <template>
-    <div>
-      <div class="header" v-show="showHeader">
-        <div
-          class="header-content"
-          :style="{ width: proxy.globalInfo.bodyWidth + 'px' }"
-        >
-          <router-link to="/" class="logo">
-            <span
-              v-for="(item, index) in logoInfo"
-              :key="index"
-              :style="{ color: item.color }"
-              >{{ item.letter }}</span
+  <div>
+    <div class="header" v-show="showHeader">
+      <div
+        class="header-content"
+        :style="{ width: proxy.globalInfo.bodyWidth + 'px' }"
+      >
+        <router-link to=""  @click="goFirstPage()" class="logo">
+          <span
+            v-for="(item, index) in logoInfo"
+            :key="index"
+            :style="{ color: item.color }"
+            >{{ item.letter }}</span
+          >
+        </router-link>
+        <!-- 板块信息 -->
+        <div class="menu-panel">
+          <v-chip-group v-model="selection" mandatory>
+            <v-chip color="#3285FF" to="/" :value='0' @click="allHandler()">全部 </v-chip>
+            <el-popover
+              placement="bottom-start"
+              :width="250"
+              trigger="hover"
+              disable="false"
+              v-for="(item , key) in boardList"
+              :key="key"
             >
-          </router-link>
-          <!-- 板块信息 -->
-          <div class="menu-panel">
-            <v-chip-group mandatory filter v-model="neighter">
-              <v-chip color="#3285FF">全部 </v-chip>
-              <el-popover
-                placement="bottom-start"
-                :width="250"
-                trigger="hover"
-                disable="false"
-              >
-                <template #reference>
-                  <v-chip color="#FB3624">求助 </v-chip>
-                </template>
-                <v-chip-group filter>
-                  <v-chip>租房 </v-chip>
-                  <v-chip>找室友 </v-chip>
-                  <v-chip>找材料 </v-chip>
-                  <v-chip>找老乡 </v-chip>
-                </v-chip-group>
-              </el-popover>
-              <el-popover placement="bottom-start" :width="250" trigger="hover">
-                <template #reference>
-                  <v-chip color="#FFBA02">分享 </v-chip>
-                </template>
-                <v-chip-group filter>
-                  <v-chip>学习经验分享 </v-chip>
-                  <v-chip>日常生活分享 </v-chip>
-                </v-chip-group>
-              </el-popover>
-              <el-popover placement="bottom-start" :width="250" trigger="hover">
-                <template #reference>
-                  <v-chip color="#25B24E">指南 </v-chip>
-                </template>
-                <v-chip-group filter>
-                  <v-chip>入学指南 </v-chip>
-                  <v-chip>留学申请指南</v-chip>
-                  <v-chip>回国指南</v-chip>
-                </v-chip-group>
-              </el-popover>
-                  <v-chip color="#25B24E">资源 </v-chip>
-            </v-chip-group>
-          </div>
-          <!-- 登录、注册、用户信息 -->
-          <div class="user-info-panel">
-            <div class="op-btn">
-              <v-btn
-                rounded="pill"
-                color="rgb(50, 133, 255)"
-                size="large"
-                :style="{ height: '40px' ,color:'#fff'}"
-                @click="newPost"
-              >
-                发帖
-                <v-icon class="iconfont" icon="mdi-plus" />
-              </v-btn>
-              <v-btn
-                rounded="pill"
-                color="rgb(50, 133, 255)"
-                size="large"
-                :style="{ 'margin-left': '10px', height: '40px' ,color:'#fff'}"
-              >
-                搜索
-                <v-icon class="iconfont" icon="mdi mdi-magnify" />
-              </v-btn>
-            </div>
-            <div v-if="false" class="container">
-              <div class="message-info">
-                <el-dropdown>
-                  <v-badge dot color="error">
-                    <v-icon
-                      class="message"
-                      size="x-large"
-                      color="rgb(50, 133, 255)"
-                      icon="mdi-message"
-                    ></v-icon>
-                  </v-badge>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item @click="gotoMessage('reply')">回复了我</el-dropdown-item>
-                      <el-dropdown-item @click="gotoMessage('likePost')">赞了我的文章</el-dropdown-item>
-                      <el-dropdown-item @click="gotoMessage('likeComment')">赞了我的评论</el-dropdown-item>
-                      <el-dropdown-item @click="gotoMessage('sys')">系统消息</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </div>
-              <div class="user-avatar">
-                <avatar :userId="123"></avatar>
-              </div>
-            </div>
-            <v-btn-group
-              v-else
-              divided
-              rounded="xl"
-              :style="{ 'margin-left': '10px', height: '40px' }"
+              <template #reference>
+                <v-chip :value="item.board_id" color="#FB3624" @click="boardClickHandler(item)">{{ item.board_name }} </v-chip>
+              </template>
+              <v-chip-group v-if="item.children" >
+                <v-chip v-for="(child) in item.children" :key="child.board_id" @click="subBoardClickHandler(child)">{{child.board_name}} </v-chip>
+              </v-chip-group>
+            </el-popover>
+            <v-chip color="#25B24E">资源 </v-chip>
+          </v-chip-group>
+        </div>
+        <!-- 登录、注册、用户信息 -->
+        <div class="user-info-panel">
+          <div class="op-btn">
+            <v-btn
+              rounded="pill"
+              color="rgb(50, 133, 255)"
+              size="large"
+              :style="{ height: '40px', color: '#fff' }"
+              @click="newPost"
             >
-              <v-btn @click="loginAndregister(1)"> 登录 </v-btn>
-              <v-btn @click="loginAndregister(0)"> 注册 </v-btn>
-            </v-btn-group>
+              发帖
+              <v-icon class="iconfont" icon="mdi-plus" />
+            </v-btn>
+            <v-btn
+              rounded="pill"
+              color="rgb(50, 133, 255)"
+              size="large"
+              :style="{ 'margin-left': '10px', height: '40px', color: '#fff' }"
+            >
+              搜索
+              <v-icon class="iconfont" icon="mdi mdi-magnify" />
+            </v-btn>
           </div>
+          <div v-if="userInfo.userId" class="container">
+            <div class="message-info">
+              <el-dropdown>
+                <v-badge dot color="error">
+                  <v-icon
+                    class="message"
+                    size="x-large"
+                    color="rgb(50, 133, 255)"
+                    icon="mdi-message"
+                  ></v-icon>
+                </v-badge>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item @click="gotoMessage('reply')"
+                      >回复了我</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="gotoMessage('likePost')"
+                      >赞了我的文章</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="gotoMessage('likeComment')"
+                      >赞了我的评论</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="gotoMessage('sys')"
+                      >系统消息</el-dropdown-item
+                    >
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+            <div class="user-avatar">
+              <avatar :userInfo="userInfo"></avatar>
+            </div>
+          </div>
+          <v-btn-group
+            v-else
+            divided
+            rounded="xl"
+            :style="{ 'margin-left': '10px', height: '40px' }"
+          >
+            <v-btn @click="loginAndregister(1)"> 登录 </v-btn>
+            <v-btn @click="loginAndregister(0)"> 注册 </v-btn>
+          </v-btn-group>
         </div>
       </div>
-      <div class="body-content">
-        <router-view></router-view>
-      </div>
-      <!-- 登录 注册 -->
-      <LoginAndRegister ref="loginRegisterRef"></LoginAndRegister>
     </div>
+    <div class="body-content">
+      <router-view></router-view>
+    </div>
+    <!-- 登录 注册 -->
+    <LoginAndRegister ref="loginRegisterRef"></LoginAndRegister>
+  </div>
 </template>
 
 <script setup>
@@ -133,8 +121,10 @@ const router = useRouter();
 const route = useRoute();
 const store = useStore();
 // 获取按下的chip的值
-const neighter = ref(0);
-const api = {};
+const api = {
+  getUserInfo: "/getUserInfo",
+  loadBoard: "/board/loadBoard",
+};
 
 const logoInfo = ref([
   {
@@ -212,8 +202,56 @@ onMounted(() => {
   initScroll();
   getUserInfo();
 });
+
 // 获取用户信息
-const getUserInfo = () => {};
+const getUserInfo = async () => {
+  let result = await proxy.Request({
+    url: api.getUserInfo,
+    showLoading:false
+  });
+  if (!result) {
+    return;
+  }
+  store.commit("updateloginUserInfo", result.data);
+};
+// 获取板块信息
+const boardList = ref([]);
+const loadBoard = async () => {
+  let result = await proxy.Request({
+    url: api.loadBoard,
+    showLoading:false
+
+  });
+  if (!result) {
+    return;
+  }
+  boardList.value = result.data;
+};
+loadBoard();
+// 板块点击跳转
+const selection=ref(0)
+const subselection=ref(0)
+watch(
+  ()=>store.state.activeBoard,
+  (newVal,oldVal)=>{
+    selection.value=newVal
+  }
+)
+const allHandler=()=>{
+  store.commit("setActiveBoard",0)
+}
+const boardClickHandler=(board)=>{
+  router.push(`/forum/${board.board_id}`);
+}
+const subBoardClickHandler=(subBoard)=>{
+  router.push(`/forum/${subBoard.p_board_id}/${subBoard.board_id}`);
+  store.commit("setActiveBoard",subBoard.p_board_id)
+}
+// 点击图标跳转
+const goFirstPage=()=>{
+  store.commit("setActiveBoard",0)
+  router.push("/")
+}
 // 监听登录用户信息
 const userInfo = ref({});
 watch(
@@ -228,16 +266,29 @@ watch(
   { immediate: true, deep: true }
 );
 
+// 监听是否展示登录框
+watch(
+  () => store.state.showLogin,
+  (newVal, oldVal) => {
+    if (newVal) {
+      loginAndregister(1);
+    }
+  },
+  { immediate: true, deep: true }
+);
+
 // 发帖
-const newPost=()=>{
-  router.push("/newPost");
-}
+const newPost = () => {
+  if(!store.getters.getLoginUserInfo){
+    loginAndregister(1);
+  }else{
+    router.push("/newPost");
+  }
+};
 // 跳转消息中心
-const gotoMessage=(type)=>{
+const gotoMessage = (type) => {
   router.push(`/user/message/${type}`);
-}
-
-
+};
 </script>
 
 <style lang="scss">

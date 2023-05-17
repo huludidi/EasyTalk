@@ -19,44 +19,63 @@
           <v-col cols="9">
             <v-sheet class="pa-2 ma1">
               <div class="article-detail">
-                <div class="title">这是标题</div>
+                <div class="title">{{ articleInfo.title }}</div>
                 <v-divider class="border-opacity-40"></v-divider>
                 <div class="user-info">
                   <v-avatar size="x-large">
-                    <v-img :src="proxy.globalInfo.avatarUrl" alt="John"></v-img>
+                    <v-img
+                      :src="
+                        proxy.globalInfo.avatarUrl +
+                        articleInfo.author_id +
+                        '.jpg'
+                      "
+                      alt="John"
+                    ></v-img>
                   </v-avatar>
                   <div class="user-info-meta">
-                    <router-link class="name-box" to="/user/123 "
-                      >葫芦弟弟</router-link
+                    <router-link
+                      class="name-box"
+                      :to="`/user/${articleInfo.author_id}`"
+                      >{{ articleInfo.nick_name }}</router-link
                     >
                     <div class="meta-box">
-                      <span> 2023年4月11日 13:01:00</span>
+                      <span> {{ articleInfo.post_time }}</span>
                       <div class="views-count">
                         <v-icon icon="mdi mdi-eye-outline"> </v-icon>
-                        <span>32</span>
+                        <span>{{ articleInfo.read_count }}</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 <v-divider class="border-opacity-40"></v-divider>
                 <!-- 文章详细 -->
-                <div class="detail" id="detail" v-html="content"></div>
+                <el-text class="mx-1" tag="p">
+                  <div class="detail" id="detail" v-html="articleInfo.content"></div>
+                </el-text>
               </div>
             </v-sheet>
             <!-- 附件下载 -->
-            <v-sheet class="pa-2 ma1">
+            <v-sheet
+              class="pa-2 ma1"
+              v-if="attachmentInfo != null && attachmentInfo != {}"
+            >
               <div class="attachment-panel" v-if="true" id="view-attachment">
                 <div class="title">附件</div>
                 <div class="attachment-info">
                   <v-icon class="item" icon="mdi-zip-box"></v-icon>
-                  <div class="file-name item">附件下载</div>
-                  <div class="size item">1024kb</div>
-                  <div class="download-count item">已下载3次</div>
+                  <div class="file-name item">
+                    {{ attachmentInfo.file_name }}
+                  </div>
+                  <div class="size item">{{ formattedSize }}</div>
+                  <div class="download-count item">
+                    已下载{{ attachmentInfo.download_count }}次
+                  </div>
                   <div class="download-btn item">
                     <v-btn
                       variant="tonal"
                       size="small"
                       color="rgb(50, 133, 255)"
+                      @click="downloadAttachment(attachmentInfo)"
                     >
                       下载
                     </v-btn>
@@ -66,7 +85,12 @@
             </v-sheet>
             <!-- 评论 -->
             <v-sheet class="pa-2 ma1" id="view-comment">
-              <CommentList></CommentList>
+              <CommentList
+                v-if="articleInfo.article_id"
+                :articleId="articleInfo.article_id"
+                :articleUserId="articleInfo.author_id"
+                @updateCommentCount="updateCommentCount"
+              ></CommentList>
             </v-sheet>
           </v-col>
           <v-col>
@@ -77,15 +101,28 @@
                   <div class="avatar">
                     <v-avatar size="60px">
                       <v-img
-                        src="https://cdn.vuetifyjs.com/images/john.jpg"
+                        :src="
+                          proxy.globalInfo.avatarUrl +
+                          articleInfo.author_id +
+                          '.jpg'
+                        "
                       ></v-img>
                     </v-avatar>
                   </div>
                   <div class="nick-name">
-                    <span :style="{ 'font-size': '18px' }">葫芦弟弟</span>
-                    <span :style="{ color: '#929292' }">剑桥大学</span>
+                    <span :style="{ 'font-size': '18px' }">{{
+                      authorInfo.nickName
+                    }}</span>
+                    <span :style="{ color: '#929292' }">{{
+                      authorInfo.school
+                    }}</span>
                   </div>
                 </div>
+                <v-card-text>
+                  <div :style="{ 'line-height': '30px', 'font-size': '16px' }">
+                    {{ authorInfo.personDescription }}
+                  </div>
+                </v-card-text>
                 <v-divider :thickness="1"></v-divider>
                 <div class="user-article-info">
                   <div class="like">
@@ -93,12 +130,23 @@
                       icon="mdi-thumb-up"
                       color="rgb(50, 133, 255)"
                     ></v-icon>
-                    <span :style="{ 'margin-left': '8px' }">获得点赞 520</span>
+                    <span :style="{ 'margin-left': '8px' }"
+                      >获得点赞 {{ authorInfo.likeCount }}</span
+                    >
                   </div>
                   <div class="pageview">
                     <v-icon icon="mdi-eye" color="rgb(50, 133, 255)"></v-icon>
                     <span :style="{ 'margin-left': '8px' }"
-                      >文章被阅读 520</span
+                      >文章被阅读 {{ authorInfo.readCount }}</span
+                    >
+                  </div>
+                  <div class="article-count">
+                    <v-icon
+                      icon="mdi-bookshelf"
+                      color="rgb(50, 133, 255)"
+                    ></v-icon>
+                    <span :style="{ 'margin-left': '8px' }"
+                      >发布文章数 {{ authorInfo.postCount }}</span
                     >
                   </div>
                 </div>
@@ -115,18 +163,26 @@
     <!-- 左侧快捷操作 -->
     <div class="quick-panel" :style="{ left: quickPanelLeft + 'px' }">
       <div class="like">
-        <v-badge :content="0" floating color="rgb(50, 133, 255)">
+        <v-badge
+          :content="articleInfo.good_count"
+          floating
+          color="blue-darken-1"
+        >
           <v-btn
             icon="mdi-thumb-up"
             flat
             variant="text"
-            :color="[havelike ? 'red-lighten-2' : '']"
+            :color="havelike ? 'red-lighten-2' : 'unset'"
             @click="doLikeHandle"
           ></v-btn>
         </v-badge>
       </div>
       <div class="comment">
-        <v-badge :content="5" floating color="rgb(50, 133, 255)">
+        <v-badge
+          :content="articleInfo.comment_count"
+          floating
+          color="blue-darken-1"
+        >
           <v-btn
             icon="mdi-comment-multiple"
             variant="text"
@@ -135,7 +191,7 @@
           ></v-btn>
         </v-badge>
       </div>
-      <div class="link">
+      <div class="link" v-if="attachmentInfo">
         <v-btn
           icon="mdi-link-variant"
           variant="text"
@@ -145,55 +201,130 @@
       </div>
     </div>
     <!-- 图片预览 -->
-    <ImageViewer ref="imageViewerRef" :imageList="previewImgList"></ImageViewer>
+    <!-- <ImageViewer ref="imageViewerRef" :imageList="previewImgList"></ImageViewer> -->
   </div>
 </template>
 
 <script setup>
-import Schoolsort from "./Schoolsort.vue"
+import Schoolsort from "./Schoolsort.vue";
 import CommentList from "./CommentList.vue";
-import { ref, getCurrentInstance, onMounted } from "vue";
+import { ref, getCurrentInstance, onMounted, computed, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 const { proxy } = getCurrentInstance();
+import { useStore } from "vuex";
+const store = useStore();
 const router = useRouter;
 const route = useRoute();
-
-const items = ref([
-  {
-    title: "求助",
-    disabled: false,
-    href: "/forum/求助",
-  },
-  {
-    title: "求室友",
-    disabled: false,
-    href: "/forum/找室友",
-  },
-  {
-    title: "title",
-    disabled: true,
-    href: "/forum/找室友",
-  },
-]);
+const api = {
+  getArticleDetail: "/forum/getArticleDetail",
+  getUserInfo: "/ucenter/getUserInfo",
+  downloadAttachment: "/api/forum/attachmentDownload",
+  doLike: "/forum/doLike",
+};
 
 // 获取面包屑数据
 const newarr = ref([]);
-onMounted(() => {
-  for (let i = 0; i < items.value.length; i++) {
-    console.log(items.value[i]);
-    let arr = {};
-    arr.title = items.value[i].title;
-    arr.disable = false;
-    arr.href = items.value[i].href;
-    newarr.value.push(arr);
+const makeNewarr = (article) => {
+  let pBoard = {
+    title: article.p_board_name,
+    disabled: false,
+    to: "/forum/" + article.p_board_id,
+  };
+  newarr.value.push(pBoard);
+  let board = {
+    title: article.board_name,
+    disable: false,
+    to: "/forum/" + article.p_board_id + "/" + article.board_id,
+  };
+  newarr.value.push(board);
+  let articletitle = {
+    title: article.title,
+    disabled: true,
+  };
+  newarr.value.push(articletitle);
+};
+// 获取作者信息
+const authorInfo = ref({});
+const getUserInfo = async (userId) => {
+  let result = await proxy.Request({
+    url: api.getUserInfo,
+    showLoading: false,
+    params: {
+      userId: userId,
+    },
+  });
+  if (!result) {
+    return;
   }
-  console.log(newarr.value);
+  authorInfo.value = result.data;
+};
+// 点赞
+const havelike = ref(false);
+const doLikeHandle = async () => {
+  if (!store.getters.getLoginUserInfo) {
+    store.commit("showLogin", true);
+    return;
+  }
+  let result = await proxy.Request({
+    url: api.doLike,
+    showLoading: false,
+    params: {
+      articleId: articleInfo.value.article_id,
+      opType: 0,
+    },
+  });
+  if (!result) {
+    return;
+  }
+  havelike.value = !havelike.value;
+  let goodCount = 1;
+  if (!havelike.value) {
+    goodCount = -1;
+  }
+  articleInfo.value.good_count = articleInfo.value.good_count + goodCount;
+};
+// 附件
+const attachmentInfo = ref({});
+const formattedSize = computed(() => {
+  const size = attachmentInfo.value.file_size;
+  if (size > 1024 * 1024) {
+    return (size / (1024 * 1024)).toFixed(2) + " MB";
+  } else {
+    return (size / 1024).toFixed(2) + " KB";
+  }
 });
+const downloadAttachment = async (info) => {
+  if (!store.getters.getLoginUserInfo) {
+    store.commit("showLogin", true);
+    return;
+  }
+  document.location.href = api.downloadAttachment + "?fileId=" + info.file_id;
+  attachmentInfo.value.download_count += 1;
+};
 
-// 获取文章详情
-const content = ref(
-  "<p>这里是文章内容</p></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>"
-);
+// 文章详情
+const articleInfo = ref({});
+const getArticleDetail = async (articleId) => {
+  let result = await proxy.Request({
+    url: api.getArticleDetail,
+    showLoading: false,
+    params: {
+      articleId: articleId,
+    },
+  });
+  if (!result) {
+    return;
+  }
+  articleInfo.value = result.data.forumArticle;
+  attachmentInfo.value = result.data.attachment;
+  havelike.value = result.data.haveLike;
+  getUserInfo(result.data.forumArticle.author_id);
+  makeNewarr(result.data.forumArticle);
+  imagePreview();
+};
+onMounted(() => {
+  getArticleDetail(route.params.articleId);
+});
 
 // 左侧快捷栏
 const quickPanelLeft =
@@ -201,16 +332,32 @@ const quickPanelLeft =
 const goToPosition = (domId) => {
   document.querySelector("#" + domId).scrollIntoView();
 };
-// 点赞
-const havelike = ref(true);
-const doLikeHandle = () => {
-  havelike.value = !havelike.value;
-};
+// 发布评论后，更新数量
+const updateCommentCount=()=>{
+  articleInfo.value.comment_count+=1
+}
 // 文章图片预览
+const imageViewerRef = ref();
 const previewImgList = ref([]);
+const imagePreview = () => {
+  nextTick(() => {
+    const imageNodeList = document
+      .querySelector("#detail")
+      .querySelectorAll("img");
+    const imageList = [];
+    imageNodeList.forEach((item, index) => {
+      const src = item.getAttribute("src");
+      imageList.push(src);
+      item.addEventListener("click", () => {
+        imageViewerRef.value.show(index);
+      });
+    });
+    previewImgList.value = imageList;
+  });
+};
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .board-info {
   .v-breadcrumbs--density-default {
     padding-top: 0;
@@ -269,7 +416,7 @@ const previewImgList = ref([]);
         color: var(--link);
       }
       img {
-        max-width: 90%;
+        max-width: 80%;
         cursor: pointer;
       }
     }
@@ -294,6 +441,9 @@ const previewImgList = ref([]);
     }
   }
   .user-intro {
+    .v-card-text{
+      padding: 0 0 5px 0 ;
+    }
     .avatar-panel {
       display: flex;
       align-items: center;
@@ -304,6 +454,11 @@ const previewImgList = ref([]);
         margin-left: 10px;
         // color:#929292
       }
+    }
+    .description {
+      width: 250px;
+      line-height: 30px;
+      font-size: 16px;
     }
     .user-article-info {
       margin-top: 15px;
@@ -317,15 +472,14 @@ const previewImgList = ref([]);
       padding: 10px 0 0 0;
       margin-bottom: 10px;
     }
-    .list-body{
-      .v-list-item__prepend
-      {
+    .list-body {
+      .v-list-item__prepend {
         align-self: center;
       }
-      .v-list-item--density-default.v-list-item--three-line{
-        min-height: 70px
+      .v-list-item--density-default.v-list-item--three-line {
+        min-height: 70px;
       }
-      .v-list-item-title{
+      .v-list-item-title {
         margin-bottom: 8px;
         font-size: 17px;
       }

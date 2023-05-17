@@ -6,7 +6,7 @@ const contentTypeForm = "application/x-www-form-urlencoded;charset=UTF-8";
 const contentTypeJson = "application/json"
 
 const instance = axios.create({
-    baseURL: "/api",
+    baseURL: '/api',
     timeout: 10 * 1000
 })
 //请求前过滤器
@@ -16,7 +16,7 @@ instance.interceptors.request.use(
         if (config.showLoading) {
             loading = ElLoading.service({
                 lock: true,
-                text: "加载中···",
+                text: config.loadingText,
                 background: 'rgba(0,0,0,0.7)'
             })
         }
@@ -32,12 +32,12 @@ instance.interceptors.request.use(
 // 请求后过滤器
 instance.interceptors.response.use(
     (response) => {
-        const { showLoading, errorCallback, showError = true } = response.config;
+        const { showLoading, errorCallback, showError } = response.config;
         if (showLoading && loading) {
             loading.close();
         }
         const responseData = response.data;
-        if(responseData.code==200){
+        if(responseData.code==200 && response.status==200){
             return responseData;
         }else if(responseData.code==901){
             return Promise.reject({showError:false,msg:"登录超时"});
@@ -45,19 +45,19 @@ instance.interceptors.response.use(
             if(errorCallback){
                 errorCallback(responseData)
             }
-            return Promise.reject({showError:showError,msg:responseData.info})
+            return Promise.reject({showError:showError,msg:responseData.error})
         }
     }, (error) => {
         if(error.config.showLoading&&loading){
             loading.close();
         }
-        return Promise.reject({showError:true,msg:"网络异常"})
+        return Promise.reject({showError:true,msg:"网络错误"})
     }
 );
 
 
 const request = (config) => {
-    const { url, params, dataType, showLoading = true } = config
+    const { url, params, dataType, showLoading = true ,errorCallback,showError=true,loadingText="加载中···"} = config
     let contentType = contentTypeForm;
     let formData = new FormData();
     for (let key in params) {
@@ -74,12 +74,18 @@ const request = (config) => {
         headers:headers,
         showLoading:showLoading,
         errorCallback:errorCallback,
-        showError:showError
+        showError:showError,
+        loadingText:loadingText
     }).catch(error=>{
         if(error.showError){
             Message.error(error.msg)
         }
         return null;
+    }).catch(error=>{
+        if(error.showError){
+            Message.error(error.msg);
+        }
+        return null
     })
 }
 

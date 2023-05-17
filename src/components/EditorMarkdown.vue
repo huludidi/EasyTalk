@@ -2,12 +2,12 @@
   <v-md-editor
     :model-value="modelValue"
     :height="height + 'px'"
-    :disabled-meus="[]"
-    :include-level="[1,2,3,4,5,6]"
+    :disabled-menus="[]"
+    :include-level="[1, 2, 3, 4, 5, 6]"
     @upload-image="uploadImageHandler"
     @change="change"
   >
-  </v-md-editor>
+  </v-md-editor>  
 </template>
 
 <script setup>
@@ -17,48 +17,48 @@ import githubTheme from "@kangc/v-md-editor/lib/theme/github.js";
 import "@kangc/v-md-editor/lib/theme/style/github.css";
 import hljs from "highlight.js";
 
+import { getCurrentInstance } from "vue";
+const { proxy } = getCurrentInstance();
 
-import {getCurrentInstance} from "vue";
-const {proxy} =getCurrentInstance();
-
-VMdEditor.use(githubTheme,{
-  Hljs:hljs,
-})
-
-const props=defineProps({
-  modelValue:{
-    type:String,
-    default:""
-  },
-  height:{
-    type:Number,
-    default:500
-  }
+VMdEditor.use(githubTheme, {
+  Hljs: hljs,
 });
 
-const emit=defineEmits();
-const change=(markdownContent,htmlContent)=>{
-  emit("update:modelValue",markdownContent);
-  emit("htmlContent",htmlContent);
-}
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: "",
+  },
+  height: {
+    type: Number,
+    default: 500,
+  },
+});
 
-const uploadImageHandler= async(event,insertImage,files)=>{
-  let result=await proxy.Reques({
-    url:"file/uploadImage",
-    params:{
-      file:files[0]
+const emit = defineEmits();
+const change = (markdownContent, htmlContent) => {
+  emit("update:modelValue", markdownContent);
+  emit("htmlContent", htmlContent);
+};
+
+const uploadImageHandler = async (event, insertImage, files) => {
+  let result = await proxy.Request({
+    url: "file/uploadImage",
+    params: {
+      file: files[0],
     },
+    loadingText:"图片审核中，请稍后···"
   });
-  if(!result){
-    return ;
+  if (!result) {
+    return;
   }
-  const url="file/uploadImage"
+  const url = proxy.globalInfo.imageUrl + result.data.fileName;
   insertImage({
-    url:url,
-    desc:"图片"
-  })
-}
+    url: url,
+    desc: "图片",
+  });
+};
 </script>
 
-<style lang="scss">
+<style lang="scss" >
 </style>

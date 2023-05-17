@@ -10,8 +10,11 @@
       :close-on-click-modal="false"
       class="cust-dialog"
       @close="close"
-      lock-scroll
     >
+      custom-class="cust-dialog"
+
+      <!-- class="cust-dialog" -->
+
       <div class="dialog-body">
         <slot></slot>
       </div>
@@ -69,21 +72,27 @@ const close = () => {
 };
 </script>
 
-<style lang="scss" >
+<style lang="scss">
 .cust-dialog {
+  margin-bottom: 10px;
   border-radius: 20px;
   .dialog-body {
     border-top: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
     padding: 15px;
     min-height: 100px;
+    max-height: calc(100vh - 200px);
+    overflow: auto;
   }
   .dialog-footer {
     text-align: right;
     padding: 15px 20px 5px;
   }
 }
-.el-dialog__body{
+.el-dialog__body {
   padding: 10px 10px 10px 10px;
+}
+.el-popup-parent--hidden {
+  padding-right: 0 !important;
 }
 </style>

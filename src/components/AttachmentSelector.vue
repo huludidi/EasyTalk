@@ -4,7 +4,7 @@
       <div class="file-name" :title="modelValue.name">
         {{ modelValue.name }}
       </div>
-      <div class="iconfont icon-del"></div>
+      <div class="iconfont icon-del" @click="delFile"></div>
     </template>
     <el-upload
       v-else
@@ -14,9 +14,7 @@
       :multiple="false"
       :http-request="selectFile"
     >
-      <v-btn color="rgb(50, 133, 255)" :style="{ color: '#fff' }"
-        >选择文件</v-btn
-      >
+      <v-btn color="rgb(50, 133, 255)" class="selectbtn">选择文件</v-btn>
     </el-upload>
   </div>
 </template>
@@ -25,16 +23,16 @@
 import { getCurrentInstance } from "vue";
 const { proxy } = getCurrentInstance();
 
-const props=defineProps({
-  modelValue:{
-    type:Object,
-    default:null,
+const props = defineProps({
+  modelValue: {
+    type: Object,
+    default: null,
   },
 });
 
 const emit = defineEmits();
 const selectFile = async (file) => {
-  emit('update:modelValue', file.file);
+  emit("update:modelValue", file.file);
 };
 const delFile = () => {
   emit("update:modelValue", null);
@@ -42,10 +40,24 @@ const delFile = () => {
 </script>
 
 <style lang="scss" scoped>
-.attachment-selector{
-    display: flex;
-    .iconfont{
-        margin-left: 5px;
-    }
+.attachment-selector {
+  width: 100%;
+  justify-content: flex-start;
+  display: flex;
+  .selectbtn {
+    color: #fff;
+  }
+  .file-name {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: rgb(50, 133, 255);
+  }
+  .iconfont {
+    margin-left: 5px;
+    color: rgb(50, 133, 255);
+    cursor: pointer;
+  }
 }
 </style>

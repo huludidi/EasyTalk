@@ -6,17 +6,17 @@
     <div class="article-panel">
       <div class="top-tab">
         <div class="sort">
-          <v-btn-toggle color="#3285FF" variant="plain">
-            <v-btn>发布时间</v-btn>
+          <v-btn-toggle color="#3285FF" variant="plain" v-model="order">
+            <v-btn value="0">点赞最多</v-btn>
             <v-divider vertical></v-divider>
-            <v-btn>评论最多</v-btn>
+            <v-btn value="1">评论最多</v-btn>
           </v-btn-toggle>
         </div>
         <div class="filterate">
-          <v-btn-toggle color="#3285FF" variant="plain">
-            <v-btn>与我同校</v-btn>
+          <v-btn-toggle color="#3285FF" variant="plain" v-model="filter">
+            <v-btn value="0">与我同校</v-btn>
             <v-divider vertical></v-divider>
-            <v-btn>与我同城</v-btn>
+            <v-btn value="1">与我同城</v-btn>
           </v-btn-toggle>
         </div>
       </div>
@@ -24,12 +24,12 @@
         <v-row no-gutters>
           <v-col cols="9">
             <v-sheet class="pa-2 ma1">
-              <DataList :dataSource="articleListInfo">
+              <DataList
+                :loading="loading"
+                :dataSource="articleListInfo"
+                @loadData="loadArticle"
+              >
                 <template #default="{ data }">
-                  <ArticleListItem :data="data"></ArticleListItem>
-                  <ArticleListItem :data="data"></ArticleListItem>
-                  <ArticleListItem :data="data"></ArticleListItem>
-                  <ArticleListItem :data="data"></ArticleListItem>
                   <ArticleListItem :data="data"></ArticleListItem>
                 </template>
               </DataList>
@@ -66,17 +66,20 @@
                 </div>
                 <v-card-actions>
                   <div class="count-panel">
-                    <div class="count-item">
-                      <span style="margin-bottom: 10px">求助</span>
-                      <v-chip color="rgb(50, 133, 255)" size="small">12</v-chip>
-                    </div>
-                    <div class="count-item">
-                      <span style="margin-bottom: 10px">分享</span>
-                      <v-chip color="rgb(50, 133, 255)" size="small">12</v-chip>
-                    </div>
-                    <div class="count-item">
-                      <span style="margin-bottom: 10px">指南</span>
-                      <v-chip color="rgb(50, 133, 255)" size="small">12</v-chip>
+                    <div
+                      class="count-item"
+                      v-for="(item, key) in articleData"
+                      :key="key"
+                    >
+                      <span style="margin-bottom: 10px">{{
+                        item.boardName
+                      }}</span>
+                      <v-chip
+                        color="rgb(50, 133, 255)"
+                        size="small"
+                        :style="{ 'justify-content': 'center' }"
+                        >{{ item.count }}</v-chip
+                      >
                     </div>
                   </div>
                 </v-card-actions>
@@ -97,20 +100,107 @@
 <script setup>
 import Schoolsort from "./Schoolsort.vue";
 import ArticleListItem from "./ArticleListItem.vue";
-import { ref, getCurrentInstance } from "vue";
+import { ref, getCurrentInstance, watch, onBeforeMount } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useStore } from "vuex";
+const store = useStore();
 const { proxy } = getCurrentInstance();
-const item = ref({});
-item.value = {
-  title: "title",
-  data: "这是信息",
-  userId: "123",
+const router = useRouter();
+const route = useRoute();
+const api = {
+  loadArticle: "/forum/loadArticle",
+  articleTypeData: "/statistics/articleTypeData",
 };
 
-const articleListInfo = ref({
-  pagNo: 1,
-  pageTotal: 12,
-  totalCount: 5,
-});
+const boardId = ref(null);
+const pBoardId = ref(null);
+if (route.params.boardId) {
+  boardId.value = route.params.boardId;
+}
+if (route.params.pBoardId) {
+  pBoardId.value = route.params.pBoardId;
+}
+const orderType = ref(null);
+const filterType = ref(null);
+const loading = ref(false);
+const articleListInfo = ref({});
+const loadArticle = async () => {
+  loading.value = true;
+  let params = {
+    pageNo: articleListInfo.value.pageNo,
+    boardId: boardId.value,
+    orderType: orderType.value,
+    filterType: filterType.value,
+    pBoardId: pBoardId.value,
+  };
+  let result = await proxy.Request({
+    url: api.loadArticle,
+    params: params,
+    showLoading: false,
+  });
+  loading.value = false;
+  if (!result) {
+    return;
+  }
+  articleListInfo.value = result.data;
+};
+
+// 监听路由变化，获取当前板块信息
+watch(
+  () => route.params,
+  (newVal, oldVal) => {
+    if (newVal.boardId) {
+      boardId.value = newVal.boardId;
+    } else {
+      boardId.value = null;
+    }
+    if (newVal.pBoardId) {
+      pBoardId.value = newVal.pBoardId;
+    } else {
+      pBoardId.value = null;
+    }
+    loadArticle();
+  }
+);
+// 文章排序 0点赞最多 1评论最多
+const order = ref([]);
+watch(
+  () => order,
+  (newVal, oldVal) => {
+    orderType.value = order.value;
+    loadArticle();
+  },
+  { immediate: true, deep: true }
+);
+// 文章筛选 0同校 1同城
+const filter = ref([]);
+watch(
+  () => filter,
+  (newVal, oldVal) => {
+    if (!filter.value) {
+      filterType.value = null;
+    } else {
+      filterType.value = filter.value;
+    }
+    loadArticle();
+  },
+  { immediate: true, deep: true }
+);
+// 右侧文章统计数据
+const articleData = ref({});
+const loadArticleData = async () => {
+  let result = await proxy.Request({
+    url: api.articleTypeData,
+    showLoading: false,
+  });
+  if (!result) {
+    return;
+  }
+  articleData.value = result.data;
+};
+loadArticleData();
+
+
 </script>
 
 <style lang="scss" scoped>
@@ -123,7 +213,7 @@ const articleListInfo = ref({
       .v-btn-group--density-default.v-btn-group {
         height: 25px;
       }
-      .filterate{
+      .filterate {
         margin-left: 440px;
       }
     }

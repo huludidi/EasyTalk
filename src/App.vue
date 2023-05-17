@@ -17,29 +17,5 @@ const config = reactive({
 });
 </script>
 <style lang="scss">
-// ::-webkit-scrollbar {
-//   width: 0 !important;
-// }
-// ::-webkit-scrollbar {
-//   width: 0 !important;height: 0;
-// }
-::-webkit-scrollbar {
-  -webkit-appearance: none;
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 0;
-}
-::-webkit-scrollbar-thumb {
-  cursor: pointer;
-  border-radius: 5px;
-  background: rgba(50, 132, 255, 0.568);
-  transition: color 0.2s ease;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(50, 132, 255, 0.826);
-}
 
 </style>

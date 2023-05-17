@@ -23,6 +23,8 @@ import EditorMarkdown from '@/components/EditorMarkdown.vue'
 import AttachmentSelector from '@/components/AttachmentSelector.vue'
 import CoverUpload from '@/components/CoverUpload.vue'
 import Table from '@/components/Table.vue'
+import NoData from '@/components/NoData.vue'
+
 
 loadFonts()
 
@@ -34,8 +36,8 @@ app.use(store)
 app.config.globalProperties.VueCookies = VueCookies
 app.config.globalProperties.globalInfo = {
     bodyWidth: 1100,
-    avatarUrl: "https://cdn.vuetifyjs.com/images/john.jpg",
-    imageUrl:"https://img1.18183.com//image/20210811/1628663922567858.png",
+    avatarUrl: "/api/file/getAvatar/",
+    imageUrl:"/api/file/getImage/",
     webDomain:"http://localhost:3004/"
 }
 
@@ -53,5 +55,6 @@ app.component("EditorMarkdown",EditorMarkdown)
 app.component("AttachmentSelector",AttachmentSelector)
 app.component("CoverUpload",CoverUpload)
 app.component("Table",Table)
+app.component("NoData",NoData)
 
 app.mount('#app')

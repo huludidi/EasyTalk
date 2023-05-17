@@ -45,7 +45,7 @@ const router = createRouter({
         {
           path: '/editPost/:articleId',
           name: "编辑帖子",
-          component: () => import('@/views/forum/ArticleDetail.vue'),
+          component: () => import('@/views/forum/EditPost.vue'),
         },
       ]
     },

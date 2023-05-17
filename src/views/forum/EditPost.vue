@@ -30,8 +30,9 @@
             ></EditorHtml>
             <EditorMarkdown
               :height="markdownHeight"
-               v-model="formData.markdownContent"
+              v-model="formData.markdown_content"
               v-if="editorType == 1"
+              @htmlContent="setHtmlContent"
             ></EditorMarkdown>
           </el-form-item>
         </el-card>
@@ -63,10 +64,10 @@
             </el-form-item>
             <!-- 封面 -->
             <el-form-item prop="cover" label="封面">
-             <CoverUpload v-model="formData.cover"></CoverUpload>
+              <CoverUpload v-model="formData.cover"></CoverUpload>
             </el-form-item>
             <!-- 摘要 -->
-            <el-form-item prop="" label="摘要">
+            <el-form-item prop="summary" label="摘要">
               <el-input
                 clearable
                 placeholder="提示信息"
@@ -80,7 +81,7 @@
               </el-input>
             </el-form-item>
             <!-- 附件 -->
-            <el-form-item prop="" label="附件">
+            <el-form-item prop="attachment" label="附件">
               <AttachmentSelector
                 v-model="formData.attachment"
               ></AttachmentSelector>
@@ -102,20 +103,63 @@
 
 <script setup>
 import { useStore } from "vuex";
-import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
+import {
+  ref,
+  reactive,
+  getCurrentInstance,
+  onMounted,
+  watch,
+  nextTick,
+} from "vue";
 import { useRouter, useRoute } from "vue-router";
 const { proxy } = getCurrentInstance();
 const router = useRouter();
 const route = useRoute();
-
-const markdownHeight = window.innerHeight - 122;
-const htmlEditorHeight = window.innerHeight - 202;
+const api = {
+  loadBoard: "/forum/loadBoard4Post",
+  postArticle: "/forum/postArticle",
+  updateArticle: "/forum/updateArticle",
+  articleDetail4Update: "/forum/articleDetail4Update",
+};
+const markdownHeight = window.innerHeight - 210;
+const htmlEditorHeight = window.innerHeight - 209;
 
 const formData = ref({});
 const formDataRef = ref();
+const checkBoard = (rule, value, callback) => {
+  if (value != null && value.lengtn < 2) {
+    callback(new Error("请选择二级板块"));
+  } else {
+    callback();
+  }
+};
+const rules = {
+  title: [{ required: true, message: "请输入内容" }],
+  boardIds: [{ required: true, message: "请选择板块", validator: checkBoard }],
+  summary: [{ required: true, message: "请输入文章摘要" }],
+};
 
+// 板块信息
+const boardProps = {
+  multiple: false,
+  checkStrictly: true,
+  value: "board_id",
+  label: "board_name",
+};
+const boardList = ref([]);
+const loadBoardList = async () => {
+  let result = await proxy.Request({
+    url: api.loadBoard,
+    showLoading: false,
+  });
+  if (!result) {
+    return;
+  }
+  boardList.value = result.data;
+};
+loadBoardList();
 // 编辑器类型 0：：富文本 1：markdown
-const editorType = ref(0);
+const editorType = ref(null);
 const changeEditor = () => {
   proxy.Confirm("切换编辑器会清空正在编辑的内容，确定要切换吗？", () => {
     editorType.value = editorType.value == 0 ? 1 : 0;
@@ -124,14 +168,85 @@ const changeEditor = () => {
     proxy.VueCookies.set("editorType", editorType.value, -1);
   });
 };
+
+// 判断新增/修改进行操作
+const articleId = ref(null);
+const getArticleDetail = () => {
+  nextTick(async () => {
+    formDataRef.value.resetFields();
+    if (articleId.value) {
+      // 修改
+      let result = await proxy.Request({
+        url: api.articleDetail4Update,
+        showLoading: false,
+        params: {
+          articleId: articleId.value,
+        },
+        showError: false,
+        errorCallback: () => {
+          ElMessageBox.alert(response.error, "错误", {
+            "show-close": false,
+            callback: (action) => {
+              router.go(-1);
+            },
+          });
+        },
+      });
+      if (!result) {
+        return;
+      }
+      let articleInfo = result.data.forumArticle;
+      // 设置编辑器
+      editorType.value = articleInfo.editor_type;
+      formData.value = articleInfo;
+      // 板块信息
+      articleInfo.boardIds = [];
+      articleInfo.boardIds.push(articleInfo.p_board_id);
+      articleInfo.boardIds.push(articleInfo.board_id);
+      // 封面信息
+      if (articleInfo.cover) {
+        articleInfo.cover = {
+          imageUrl: articleInfo.cover,
+        };
+      }
+      // 附件
+      if (articleInfo.attachment_type) {
+        articleInfo.attachment = {
+          name: result.data.attachment.file_name,
+        };
+      }
+    } else {
+      // 新增
+      formData.value = {};
+      editorType.value = proxy.VueCookies.get("editorType") || 0;
+    }
+  });
+};
+watch(
+  () => route,
+  (newVal, oldVal) => {
+    if (
+      newVal.path.indexOf("/editPost") != -1 ||
+      newVal.path.indexOf("/newPost") != -1
+    ) {
+      articleId.value = newVal.params.articleId;
+      getArticleDetail();
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+const setHtmlContent = (HTMLContent) => {
+  formData.value.content = htmlContent;
+};
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss" >
 .edit-post {
   .post-panel {
     display: flex;
     .el-card__header {
-      padding: 10px;
+      padding: 5px 10px 5px 10px;
     }
     .post-editor {
       flex: 1;

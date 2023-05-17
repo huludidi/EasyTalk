@@ -5,10 +5,15 @@
       :title="dialogConfig.title"
       :buttons="dialogConfig.buttons"
       :showCancel="false"
-      @close="dialogConfig.show = false"
+      @close="closeDialog"
       width="400px"
     >
-      <el-form :model="formData" :rules="rules" ref="formDataRef">
+      <el-form
+        class="login-register"
+        :model="formData"
+        :rules="rules"
+        ref="formDataRef"
+      >
         <el-form-item prop="email">
           <el-input
             size="large"
@@ -57,7 +62,7 @@
                 </template>
               </el-input>
               <el-button
-                @click="sendEmailCode"
+                @click="sendEmailCode(onType)"
                 class="send-email-btn"
                 type="primary"
                 size="large"
@@ -137,6 +142,25 @@
             </el-input>
           </el-form-item>
         </div>
+        <el-form-item prop="checkCode">
+          <div class="check-code-panel">
+            <el-input
+              size="large"
+              clearable
+              placeholder="请输入验证码"
+              v-model="formData.checkCode"
+            >
+              <template #prefix>
+                <span class="iconfont icon-checkcode"></span>
+              </template>
+            </el-input>
+            <img
+              :src="checkCodeUrl"
+              class="check-code"
+              @click="changeCheckCode"
+            />
+          </div>
+        </el-form-item>
         <el-form-item v-if="onType == 1">
           <div class="remeberme-panel">
             <el-checkbox v-model="formData.remeberMe">记住我</el-checkbox>
@@ -174,10 +198,13 @@
 
 <script setup>
 import md5 from "js-md5";
+import { useStore } from "vuex";
 import { nextTick, reactive, ref, getCurrentInstance } from "vue";
 const { proxy } = getCurrentInstance();
 const formData = ref({});
 const formDataRef = ref();
+const store = useStore();
+
 // 确认密码校验
 const checkConfirmPassword = (rule, value, callback) => {
   if (value != formData.value.registerPassword) {
@@ -249,32 +276,56 @@ const resetForm = () => {
     // elements自带重置表单
     formDataRef.value.resetFields();
     formData.value = {};
-
-    if(onType.value==1){
-      const cookieLoginInfo=proxy.VueCookies.get("loginInfo");
-      if(cookieLoginInfo){
-        formData.value=cookieLoginInfo;
+    changeCheckCode();
+    if (onType.value == 1) {
+      const cookieLoginInfo = proxy.VueCookies.get("loginInfo");
+      if (cookieLoginInfo) {
+        formData.value = cookieLoginInfo;
       }
     }
   });
 };
 
 const api = {
-  login: "/user/login",
-  register: "/user/register",
+  login: "/login",
+  register: "/register",
   captcha: "/user/captcha/email",
   resetPwd: "/resetPwd",
+  checkCode: "/api/checkCode",
+  sendEmailCode: "/sendEmailCode",
+};
+
+// 验证码
+const checkCodeUrl = ref(api.checkCode);
+const changeCheckCode = () => {
+  checkCodeUrl.value = api.checkCode + "?time=" + new Date().getTime();
 };
 // 发送邮箱验证码
-const sendEmailCode = () => {
-  formDataRef.value.validateField("email", (valid) => {
+const sendEmailCode = (type) => {
+  formDataRef.value.validateField("email", async (valid) => {
     if (!valid) {
       return;
     }
     //
-    console.log("发送验证码");
+    const params = Object.assign(
+      {},
+      { email: formData.value.email, type: type }
+    );
+
+    let result = await proxy.Request({
+      url: api.sendEmailCode,
+      params: params,
+      errorCallback: () => {
+        changeCheckCode(1);
+      },
+    });
+    if (!result) {
+      return;
+    }
+    proxy.Message.success("验证码发送成功，请登录邮箱查看");
   });
 };
+
 // 登录、注册、重置密码 提交表单
 const doSubmit = () => {
   formDataRef.value.validate(async (valid) => {
@@ -284,20 +335,28 @@ const doSubmit = () => {
     let params = {};
     Object.assign(params, formData.value);
     let url = null;
+    // 注册
     if (onType.value == 0) {
       params.password = formData.value.registerPassword;
       url = api.register;
-    } else if (onType.value == 1) {
+    }
+    // 登录
+    else if (onType.value == 1) {
       url = api.login;
       let cookieLoginInfo = proxy.VueCookies.get("loginInfo");
       let cookiePassword =
         cookieLoginInfo == null ? null : cookieLoginInfo.passwod;
-        if(params.password!=cookiePassword){
-          params.password=md5(params.password)
-        }
-    } else if (onType.value == 2) {
-      url = api.resetPwd;
+      if (params.password != cookiePassword) {
+        params.password = params.password;
+      }
     }
+    // 重置密码
+    else if (onType.value == 2) {
+      url = api.resetPwd;
+      params.password = formData.value.confirmPassword;
+    }
+
+    // 发送请求
     let result = await proxy.Request({
       url: url,
       params: params,
@@ -305,29 +364,51 @@ const doSubmit = () => {
     if (!result) {
       return;
     }
+
     // 注册返回
     if (onType.value == 0) {
       proxy.Message.success("注册成功");
       showPanel(1);
     } else if (onType.value == 1) {
-      // 登录
+      // 登录返回
       if (params.remeberMe) {
         const loginInfo = {
           email: params.email,
-          passwod: params.password,
+          password: params.password,
           remeberMe: params.remeberMe,
         };
         proxy.VueCookies.set("loginInfo", loginInfo, "7d");
       } else {
         proxy.VueCookies.remove("loginInfo");
       }
+      dialogConfig.show = false;
+      proxy.Message.success("登录成功");
+      store.commit("updateloginUserInfo", result.data);
     } else if (onType.value == 2) {
+      proxy.Message.success("重置密码成功，请重新登录");
+      showPanel(1);
     }
   });
 };
+
+const closeDialog=()=>{
+  dialogConfig.show=false;
+  store.commit("showLogin",false)
+}
 </script>
 
 <style lang="scss" scoped>
+.login-register {
+  .check-code-panel {
+    display: flex;
+    .check-code {
+      height: 42px;
+      width: 150px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+  }
+}
 .send-email-panel {
   display: flex;
   width: 100%;

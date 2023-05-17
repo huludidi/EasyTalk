@@ -8,7 +8,7 @@
       :http-request="uploadImage"
     >
       <div class="cover-upload-btn">
-        <template v-if="localPreview">
+        <template v-if="localFile">
             <img :src="localFile" />
         </template>
         <template v-else>
@@ -19,7 +19,7 @@
               "
               v-if="modelValue && modelValue.imageUrl"
             />
-            <span class="iconfont icon-add"></span>
+            <span v-else class="iconfont icon-add"></span>
         </template>
       </div>
     </el-upload>
@@ -43,7 +43,7 @@ const props = defineProps({
   },
 });
 
-const localPreview = ref(false);
+// 本地预览
 const localFile = ref();
 
 const emit = defineEmits();
