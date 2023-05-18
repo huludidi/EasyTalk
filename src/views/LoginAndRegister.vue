@@ -149,6 +149,7 @@
               clearable
               placeholder="请输入验证码"
               v-model="formData.checkCode"
+              @keyup-enter="doSubmit"
             >
               <template #prefix>
                 <span class="iconfont icon-checkcode"></span>

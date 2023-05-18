@@ -12,6 +12,7 @@
     <div class="pagination">
       <el-pagination
         v-if="dataSource.pageTotal > 1"
+        :page-size="dataSource.pageSize"
         :page-count="dataSource.pageTotal"
         background
         :total="dataSource.totalCount"
@@ -28,6 +29,10 @@
 <script setup>
 import { ref, getCurrentInstance } from "vue";
 const props = defineProps({
+  pageSize:{
+    type:Number,
+    default:10
+  },
   dataSource: {
     type: Object,
   },

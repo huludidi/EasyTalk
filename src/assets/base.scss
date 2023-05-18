@@ -1,4 +1,5 @@
 ::-webkit-scrollbar {
+  z-index: 9999;
   -webkit-appearance: none;
   width: 6px;
   height: 6px;
@@ -55,4 +56,9 @@ body {
   &:hover {
     transform: scale(1.1);
   }
+}
+
+.el-popup-parent--hidden {
+  // padding-right: 0px !important;
+  overflow: hidden !important;
 }

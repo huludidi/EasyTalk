@@ -39,7 +39,7 @@
             <v-sheet class="ma2">
               <v-card class="mx-auto" max-width="267px">
                 <v-img
-                  class="align-end text-white animate__animated animate__fadeInDown animate_duration-9s"
+                  class="align-end text-white animate__animated animate__fadeInDown animate_duration-5s"
                   src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
                   cover
                 >
@@ -202,6 +202,7 @@ const loadArticleData = async () => {
   }
   articleData.value = result.data;
 };
+loadArticleData()
 </script>
 
 <style lang="scss" scoped>

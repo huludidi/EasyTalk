@@ -56,7 +56,6 @@ const dialogConfig = reactive({
 
 const emit=defineEmits();
 const submitForm=()=>{
-    console.log("表单提交了");
     dialogConfig.show=false;
     emit("reload");
 }

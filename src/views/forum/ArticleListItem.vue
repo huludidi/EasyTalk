@@ -98,7 +98,7 @@
                   </div>
                   <div class="cover-side">
                     <el-image
-                    class="animate__animated animate__fadeInDown animate_duration-9s"
+                    class="animate__animated animate__fadeInDown animate_duration-5s"
                       style="width: 200px; height: 200px; display: block"
                       :src="proxy.globalInfo.imageUrl + (data.cover ? data.cover : '1/1')"
                       fit="fill"

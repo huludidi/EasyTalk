@@ -1,9 +1,9 @@
 <template>
   <v-app >
     <v-main>
-      <el-config-provider :locale="locale" :message="config">
+      <!-- <el-config-provider :locale="locale" :message="config"> -->
         <router-view />
-      </el-config-provider>
+      <!-- </el-config-provider> -->
     </v-main>
   </v-app>
 </template>

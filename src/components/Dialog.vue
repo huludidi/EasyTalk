@@ -10,6 +10,7 @@
       :close-on-click-modal="false"
       class="cust-dialog"
       @close="close"
+      @open="onOpenDialog"
     >
       <div class="dialog-body">
         <slot></slot>
@@ -64,7 +65,15 @@ const props = defineProps({
 });
 const emit = defineEmits();
 const close = () => {
+  document.body.style="null"
+  // document.body.style.width = "";
+  // document.documentElement.style.overflow = "";
   emit("close");
+};
+const onOpenDialog = () => {
+  document.body.style="position: fixed;width: 100%;height: 100%;"
+  // document.body.style.width = "calc(100% - 5px)";
+  // document.documentElement.style.overflow = "hidden";
 };
 </script>
 
@@ -87,8 +96,5 @@ const close = () => {
 }
 .el-dialog__body {
   padding: 10px 10px 10px 10px;
-}
-.el-popup-parent--hidden {
-  padding-right: 0 !important;
 }
 </style>

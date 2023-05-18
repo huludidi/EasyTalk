@@ -35,7 +35,7 @@
               管理网站</v-btn
             >
             <v-divider class="my-3"></v-divider>
-            <v-btn rounded variant="text"> 退出</v-btn>
+            <v-btn rounded variant="text" @click="logout"> 退出</v-btn>
           </div>
         </v-card-text>
       </v-card>
@@ -48,6 +48,9 @@ import { ref, reactive, getCurrentInstance, nextTick } from "vue";
 import { useRouter } from "vue-router";
 const { proxy } = getCurrentInstance();
 const router = useRouter();
+import { useStore } from "vuex";
+const store = useStore();
+
 const props = defineProps({
   userInfo: {
     type: Object,
@@ -71,6 +74,18 @@ const goTomanage = () => {
     router.push("/manage");
   });
 };
+const logout = ()=>{
+  proxy.Confirm("确定要退出吗？",async()=>{
+  let result=await proxy.Request({
+    url:"/logout",
+    showLoading:false,
+  });
+  if(!result){
+    return
+  }
+  store.commit("updateloginUserInfo",null);
+  });
+}
 </script>
 
 <style lang="scss">

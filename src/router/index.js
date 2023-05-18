@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import store from '../store'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,6 +47,11 @@ const router = createRouter({
           path: '/editPost/:articleId',
           name: "编辑帖子",
           component: () => import('@/views/forum/EditPost.vue'),
+        },
+        {
+          path: '/search',
+          name: "搜索",
+          component: () => import('@/views/Search.vue'),
         },
       ]
     },
@@ -113,6 +119,13 @@ const router = createRouter({
     },
 
   ]
+})
+
+router.beforeEach((to,from,next)=>{
+if(to.path.indexOf("/user")!=-1){
+  store.commit("setActiveBoard",-1)
+}
+next();
 })
 
 export default router

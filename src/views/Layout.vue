@@ -65,6 +65,7 @@
               color="rgb(50, 133, 255)"
               size="large"
               :style="{ 'margin-left': '10px', height: '40px', color: '#fff' }"
+              @click="goSearch"
             >
               搜索
               <v-icon class="iconfont" icon="mdi mdi-magnify" />
@@ -73,28 +74,95 @@
           <div v-if="userInfo.userId" class="container">
             <div class="message-info">
               <el-dropdown>
-                <v-badge dot color="error">
+                <div>
+                  <v-badge dot color="error" v-if="messageCountInfo.total > 0">
+                    <v-icon
+                      class="message"
+                      size="x-large"
+                      color="rgb(50, 133, 255)"
+                      icon="mdi-message"
+                    ></v-icon>
+                  </v-badge>
                   <v-icon
+                    v-else
                     class="message"
                     size="x-large"
                     color="rgb(50, 133, 255)"
                     icon="mdi-message"
                   ></v-icon>
-                </v-badge>
+                </div>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item @click="gotoMessage('reply')"
-                      >回复了我</el-dropdown-item
+                    <el-dropdown-item
+                      @click="gotoMessage('reply')"
+                      class="manage-item"
                     >
-                    <el-dropdown-item @click="gotoMessage('likePost')"
-                      >赞了我的文章</el-dropdown-item
+                      <v-icon icon="mdi-message-reply-text"></v-icon>
+                      <span class="text">回复了我</span>
+                      <v-badge
+                        v-if="messageCountInfo.reply > 0"
+                        class="count-tag"
+                        color="error"
+                        :content="messageCountInfo.reply"
+                        inline
+                      ></v-badge>
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      @click="gotoMessage('likePost')"
+                      class="manage-item"
                     >
-                    <el-dropdown-item @click="gotoMessage('likeComment')"
-                      >赞了我的评论</el-dropdown-item
+                      <v-icon icon="mdi mdi-hand-heart"></v-icon>
+                      <span class="text">赞了文章</span>
+                      <v-badge
+                        v-if="messageCountInfo.likePost > 0"
+                        class="count-tag"
+                        color="error"
+                        :content="messageCountInfo.likePost"
+                        inline
+                      ></v-badge>
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      @click="gotoMessage('likeComment')"
+                      class="manage-item"
                     >
-                    <el-dropdown-item @click="gotoMessage('sys')"
-                      >系统消息</el-dropdown-item
+                      <v-icon icon="mdi mdi-hand-heart"></v-icon>
+                      <span class="text">赞了评论</span>
+                      <v-badge
+                        v-if="messageCountInfo.likeComment > 0"
+                        class="count-tag"
+                        color="error"
+                        :content="messageCountInfo.likeComment"
+                        inline
+                      ></v-badge>
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      @click="gotoMessage('arrachmentDownload')"
+                      class="manage-item"
                     >
+                      <v-icon icon="mdi-file-cloud"></v-icon>
+                      <span class="text">下载了附件</span>
+                      <v-badge
+                        v-if="messageCountInfo.attachmentDownload > 0"
+                        class="count-tag"
+                        color="error"
+                        :content="messageCountInfo.attachmentDownload"
+                        inline
+                      ></v-badge>
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      @click="gotoMessage('sys')"
+                      class="manage-item"
+                    >
+                      <v-icon icon="mdi mdi-cog"></v-icon>
+                      <span class="text">系统消息</span>
+                      <v-badge
+                        v-if="messageCountInfo.sys > 0"
+                        class="count-tag"
+                        color="error"
+                        :content="messageCountInfo.sys"
+                        inline
+                      ></v-badge>
+                    </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -102,7 +170,9 @@
             <div class="user-avatar">
               <avatar
                 :userInfo="userInfo"
-                :class="`${isHovering?'animate__animated animate__rotateIn':''}`"
+                :class="`${
+                  isHovering ? 'animate__animated animate__rotateIn' : ''
+                }`"
                 @mouseover="onMouseOver"
                 @mouseleave="onMouseLeave"
               ></avatar>
@@ -141,6 +211,7 @@ const store = useStore();
 const api = {
   getUserInfo: "/getUserInfo",
   loadBoard: "/board/loadBoard",
+  getMessageCount: "/ucenter/getMessageCount",
 };
 
 const logoInfo = ref([
@@ -182,10 +253,8 @@ const showHeader = ref(true);
 const showDialog = ref(true);
 // 获取滚动条的高度
 const getScrollTop = () => {
-  let scrollTop =
-    document.documentElement.scrollTop ||
-    document.body.scrollTop ||
-    window.pageYOffset;
+  let scrollTop = document.documentElement.scrollTop;
+  document.body.scrollTop || window.pageYOffset;
   return scrollTop;
 };
 const initScroll = () => {
@@ -277,6 +346,7 @@ watch(
   (newVal, oldVal) => {
     if (newVal != undefined && newVal != null) {
       userInfo.value = newVal;
+      loadMessgeCount();
     } else {
       userInfo.value = {};
     }
@@ -307,8 +377,26 @@ const newPost = () => {
 const gotoMessage = (type) => {
   router.push(`/user/message/${type}`);
 };
+const messageCountInfo = ref({});
+const loadMessgeCount = async () => {
+  let result = await proxy.Request({
+    url: api.getMessageCount,
+    showLoading: false,
+  });
+  if (!result) {
+    return;
+  }
+  store.commit("setMessageCountInfo", result.data);
+};
 
-
+watch(
+  () => store.state.messageCountInfo,
+  (newVal, oldVal) => {
+    messageCountInfo.value = newVal || {};
+  },
+  { immediate: true, deep: true }
+);
+// 头像旋转
 const isHovering = ref(false);
 const onMouseOver = () => {
   isHovering.value = true;
@@ -316,6 +404,10 @@ const onMouseOver = () => {
 const onMouseLeave = () => {
   isHovering.value = false;
 };
+
+const goSearch=()=>{
+  router.push("/search");
+}
 </script>
 
 <style lang="scss">
@@ -390,5 +482,19 @@ const onMouseLeave = () => {
 }
 .v-main {
   background: rgb(245, 245, 245);
+}
+.manage-item {
+  display: flex;
+  justify-content: space-around;
+  .text {
+    margin-left: 10px;
+    flex: 1;
+  }
+  .count-tag {
+    display: block;
+  }
+}
+.el-dropdown-menu {
+  width: 170px;
 }
 </style>

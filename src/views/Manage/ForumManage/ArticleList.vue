@@ -341,7 +341,6 @@ const boardList = ref([]);
 // 修改板块信息
 const articleBoardRef = ref();
 const updataBoard = (data) => {
-  console.log(data);
   articleBoardRef.value.updataBoard(data);
 };
 // 批量选择

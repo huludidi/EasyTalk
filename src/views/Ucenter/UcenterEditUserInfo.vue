@@ -1,6 +1,6 @@
 <template>
   <Dialog
-  top="30px"
+    top="30px"
     :show="dialogConfig.show"
     :title="dialogConfig.title"
     :buttons="dialogConfig.buttons"
@@ -37,7 +37,6 @@
           clearable
           class="inline-input w-50"
           placeholder="请输入学校"
-          @select="handleSelect"
         />
       </el-form-item>
       <el-form-item label="邮箱" prop="schoolEmail">
@@ -78,9 +77,10 @@ import { useRouter, useRoute } from "vue-router";
 const { proxy } = getCurrentInstance();
 const router = useRouter();
 const route = useRoute();
-const api={
-  updateUserInfo:"/ucenter/updateUserInfo"
-}
+const api = {
+  updateUserInfo: "/ucenter/updateUserInfo",
+  getSchoolInfo: "/school/getSchoolInfo",
+};
 const checkBoard = (rule, value, callback) => {
   if (value == null || value.length < 2) {
     callback(new Error("请选择二级板块"));
@@ -107,10 +107,9 @@ const formDataRef = ref();
 // 自动补全输入框
 interface RestaurantItem {
   value: string;
-  link: string;
 }
-const state2 = ref("");
 const restaurants = ref<RestaurantItem[]>([]);
+
 const querySearch = (queryString: string, cb: any) => {
   const results = queryString
     ? restaurants.value.filter(createFilter(queryString))
@@ -118,6 +117,7 @@ const querySearch = (queryString: string, cb: any) => {
   // call callback function to return suggestions
   cb(results);
 };
+
 const createFilter = (queryString: string) => {
   return (restaurant: RestaurantItem) => {
     return (
@@ -125,23 +125,29 @@ const createFilter = (queryString: string) => {
     );
   };
 };
-const loadAll = () => {
-  return [
-    { value: "vue", link: "https://github.com/vuejs/vue" },
-    { value: "element", link: "https://github.com/ElemeFE/element" },
-    { value: "cooking", link: "https://github.com/ElemeFE/cooking" },
-    { value: "mint-ui", link: "https://github.com/ElemeFE/mint-ui" },
-    { value: "vuex", link: "https://github.com/vuejs/vuex" },
-    { value: "vue-router", link: "https://github.com/vuejs/vue-router" },
-    { value: "babel", link: "https://github.com/babel/babel" },
-  ];
-};
-const handleSelect = (item: RestaurantItem) => {
-  console.log(item);
+
+const loadSchoolInfo = async () => {
+  try {
+    const result = await proxy.Request({
+      url: api.getSchoolInfo,
+      showLoading: false,
+    });
+    if (!result || !result.data || result.data.length === 0) {
+      console.error("Error: No data found.");
+      return [];
+    }
+    const info = result.data.map((element: any) => ({
+      value: element.ch_name,
+    }));
+    return info;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };
 
-onMounted(() => {
-  restaurants.value = loadAll();
+onMounted(async () => {
+  restaurants.value = await loadSchoolInfo();
 });
 
 const dialogConfig = reactive({
@@ -157,31 +163,31 @@ const dialogConfig = reactive({
     },
   ],
 });
-
-const emit=defineEmits(["resetUserInfo"])
+// 修改信息
+const emit = defineEmits(["resetUserInfo"]);
 const updateUserInfoHandler = () => {
-  formDataRef.value.validate(async (valid)=>{
-    if(!valid){
-      return
+  formDataRef.value.validate(async (valid) => {
+    if (!valid) {
+      return;
     }
-    let params={}
-    Object.assign(params,formData.value);
+    let params = {};
+    Object.assign(params, formData.value);
     let result = await proxy.Request({
-      url:api.updateUserInfo,
-      shwoLoading:false,
+      url: api.updateUserInfo,
+      shwoLoading: false,
       params,
     });
-    if(!result){
-      return
+    if (!result) {
+      return;
     }
-    dialogConfig.show=false;
-    if(params.avatar instanceof File){
+    proxy.Message.success("修改成功");
+    dialogConfig.show = false;
+    if (params.avatar instanceof File) {
       router.go(0);
+    } else {
+      emit("resetUserInfo", params);
     }
-    else{
-      emit("resetUserInfo",params)
-    }
-  })
+  });
 };
 
 const showEditUserInfoDialog = (userInfo) => {
