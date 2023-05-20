@@ -4,10 +4,10 @@
       <el-form :model="searchFormData" label-width="50px">
         <el-row>
           <el-col :span="4">
-            <el-form-item label="内容" prop="contentFuzzy">
+            <el-form-item label="学校" prop="school">
               <el-input
                 placeholder="支持模糊查询"
-                v-model="searchFormData.contentFuzzy"
+                v-model="searchFormData.school"
                 clearable
                 @keyup.native="loadDataList"
               ></el-input>
@@ -40,7 +40,6 @@
           <el-col :span="4">
             <el-button-group>
               <el-button type="primary" @click="loadDataList">搜索</el-button>
-              <el-button type="danger" @click="delBatch">批量删除</el-button>
             </el-button-group>
           </el-col>
         </el-row>
@@ -58,19 +57,24 @@
         <template #avatar="{ row }">
           <v-avatar
             color="grey-darken-3"
-            image="https://avataaars.io/?avatarStyle=Transparent&topType=ShortHairShortCurly&accessoriesType=Prescription02&hairColor=Black&facialHairType=Blank&clotheType=Hoodie&clotheColor=White&eyeType=Default&eyebrowType=DefaultNatural&mouthType=Default&skinColor=Light"
+            :image="proxy.globalInfo.avatarUrl + row.user_id"
           ></v-avatar>
         </template>
         <!-- 昵称 -->
-        <template #nickName="{ row }"
-          >{{ row.nickName }}
-          <span v-if="row.sex">({{ row.sex == 0 ? "女" : "男" }})</span>
+        <template #nickName="{ row }">
+          {{ row.nick_name }}
+          <span v-if="row.sex">({{ row.sex == 0 ? "男" : "女" }})</span>
         </template>
         <!-- 登录信息 -->
         <template #loginInfo="{ row }">
-          <div>最后登录时间：{{ row.lastLoginTime }}</div>
-          <div>最后登录IP：{{ row.lastLoginIp }}</div>
-          <div>最后登录地点：{{ row.lastLoginIpAddress }}</div>
+          <div>最后登录时间：{{ row.last_login_time }}</div>
+          <div>最后登录IP：{{ row.last_login_ip }}</div>
+          <div>
+            最后登录地点：
+            {{ JSON.parse(row.last_login_ip_address).country_name }}
+            /{{ JSON.parse(row.last_login_ip_address).region }}/
+            {{ JSON.parse(row.last_login_ip_address).city }}
+          </div>
         </template>
         <!-- 状态 -->
         <template #status="{ row }">
@@ -97,15 +101,19 @@
         </template>
       </Table>
     </div>
+    <SendMessage ref="sendMessageRef"></SendMessage>
   </div>
 </template>
 
 <script setup>
+import SendMessage from "./SendMessage.vue"
 import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
 const { proxy } = getCurrentInstance();
-
-const searchFormData = ref({});
-
+const api = {
+  loadUserList: "/manageUser/loadUserList",
+  updateUserStatus: "/manageUser/updateUserStatus",
+  sendMessage: "/manageUser/sendMessage",
+};
 // 列表
 const columns = [
   {
@@ -127,11 +135,15 @@ const columns = [
   },
   {
     label: "个人描述",
-    prop: "personDescription",
+    prop: "person_description",
+  },
+  {
+    label: "学校",
+    prop: "school",
   },
   {
     label: "加入时间",
-    prop: "joinTime",
+    prop: "join_time",
     width: 180,
   },
   {
@@ -154,54 +166,53 @@ const columns = [
   },
 ];
 
-const tableData = ref({
-  totalCount: 5,
-  pageSize: 1,
-  pageNo: 1,
-  list: [
-    {
-      userIpAddress: "未知",
-      nickName: "葫芦弟",
-      sex: 0,
-      email: "testqq.com",
-      personDescription: "这是一条个人描述",
-      joinTime: "2023-01-01 12:12:12",
-      lastLoginTime: "2023-01-01 12:12:12",
-      lastLoginIp: "127.0.0.0:3004",
-      lastLoginIpAddress: "西红市",
-      status: 1,
-      Time: "2023-01-01 12:12:12",
-    },
-    {
-      userIpAddress: "未知",
-      nickName: "葫芦哥",
-      sex: 1,
-      email: "testqq.com",
-      personDescription: "这是一条个人描述",
-      joinTime: "2023-01-01 12:12:12",
-      lastLoginTime: "2023-01-01 12:12:12",
-      lastLoginIp: "127.0.0.0:3004",
-      lastLoginIpAddress: "红富市",
-      status: 1,
-      Time: "2023-01-01 12:12:12",
-    },
-  ],
-});
+const searchFormData = ref({});
+const tableData = ref({});
 const tableOptions = {
   extHeight: 70,
 };
 // 更新数据列表
-const loadDataList = () => {};
-// 删除
-const delBatch=()=>{}
-
+const loadDataList = async () => {
+  let params = {
+    pageNo: tableData.value.pageNo,
+    pageSize: tableData.value.pageSize,
+    school: searchFormData.value.school,
+    nickNameFuzzy: searchFormData.value.nickNameFuzzy,
+    status: searchFormData.value.status,
+  };
+  let result = await proxy.Request({
+    url: api.loadUserList,
+    showLoading: false,
+    params: params,
+  });
+  if (!result) {
+    return;
+  }
+  tableData.value = result.data;
+};
+loadDataList();
 
 // 改变用户状态
-const updateUserStatus = () => {};
+const updateUserStatus =async (row) => {
+  let result=await proxy.Request({
+    url:api.updateUserStatus,
+    params:{
+      userId:row.user_id,
+      status:row.status
+    },
+    showLoading:false
+  })
+  if(!result){
+    return
+  }
+  proxy.Message.success("禁用成功");
+  loadDataList();
+};
 // 发送系统信息
-const sendMessage = () => {};
-
-
+const sendMessageRef=ref();
+const sendMessage = (row) => {
+sendMessageRef.value.sendMessageHandler(row);
+};
 </script>
 
 <style lang="scss">

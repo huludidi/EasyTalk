@@ -112,6 +112,11 @@ const router = createRouter({
               path: '/manage/settings/sys',
               name: "系统设置",
               component: () => import('@/views/Manage/Setting/SysSetting.vue'),
+            },
+            {
+              path: '/manage/settings/school',
+              name: "学校设置",
+              component: () => import('@/views/Manage/Setting/SchoolSetting.vue'),
             }
           ]
         },

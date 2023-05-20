@@ -1,5 +1,5 @@
 <template>
-  <div style="height:635px">
+  <div style="height: 635px">
     <el-scrollbar>
       <el-form
         :model="formData"
@@ -91,10 +91,10 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="是否开启评论" prop="commentOpen">
-              <el-fadio-group v-model="formData.commentOpen">
-                <el-radio :label="true">开启</el-radio>
+              <el-radio-group v-model="formData.commentOpen">
                 <el-radio :label="false">关闭</el-radio>
-              </el-fadio-group>
+                <el-radio :label="true">开启</el-radio>
+              </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
@@ -122,7 +122,6 @@
 <script setup>
 import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
 const { proxy } = getCurrentInstance();
-
 const rules = {
   registerWelcomInfo: [{ required: true, message: "请输入欢迎消息" }],
   emailTitle: [{ required: true, message: "请输入邮件标题" }],
@@ -147,8 +146,44 @@ const rules = {
     { validator: proxy.Verify.number, message: "请输入正确的数字" },
   ],
 };
-
+const api = {
+  getSetting: "/manageSetting/getSetting",
+  saveSetting: "/manageSetting/saveSetting",
+};
 const formData = ref({});
+// 加载信息
+const loadDataList = async () => {
+  let result = await proxy.Request({
+    url: api.getSetting,
+    showLoading: false,
+  });
+  if (!result) {
+    return;
+  }
+  formData.value = {
+    ...result.data.audit,
+    ...result.data.comment,
+    ...result.data.email,
+    ...result.data.like,
+    ...result.data.post,
+    ...result.data.register,
+  };
+};
+loadDataList();
+
+const saveSetting = async () => {
+  let params = {};
+  Object.assign(params, formData.value);
+  let result = await proxy.Request({
+    url: api.saveSetting,
+    params,
+    showLoading: false,
+  });
+  if (!result) {
+    return;
+  }
+  proxy.Message.success("保存成功");
+};
 </script>
  
 <style lang="scss">

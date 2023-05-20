@@ -24,11 +24,8 @@
         <v-row no-gutters>
           <v-col cols="9">
             <v-sheet class="pa-2 ma1">
-              <DataList
-                :loading="loading"
-                :dataSource="articleListInfo"
-                @loadData="loadArticle"
-              >
+              <ArticleListLoading v-if="loading" :loading="loading"></ArticleListLoading>
+              <DataList :dataSource="articleListInfo" @loadData="loadArticle">
                 <template #default="{ data }">
                   <ArticleListItem :data="data"></ArticleListItem>
                 </template>
@@ -202,7 +199,7 @@ const loadArticleData = async () => {
   }
   articleData.value = result.data;
 };
-loadArticleData()
+loadArticleData();
 </script>
 
 <style lang="scss" scoped>

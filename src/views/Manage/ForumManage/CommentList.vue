@@ -1,57 +1,81 @@
 <template>
   <div>
-    <div class="top-panel">
-      <el-form :model="searchFormData" label-width="50px">
-        <el-row>
-          <el-col :span="4">
-            <el-form-item label="内容" prop="contentFuzzy">
-              <el-input
-                placeholder="支持模糊查询"
-                v-model="searchFormData.contentFuzzy"
-                clearable
-                @keyup.native="loadDataList"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item label="昵称" prop="nickNameFuzzy">
-              <el-input
-                placeholder="请输入昵称"
-                v-model="searchFormData.nickNameFuzzy"
-                clearable
-                @keyup.native="loadDataList"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item label="状态" prop="status">
-              <el-select
-                placeholder="请选择状态"
-                clearable
-                v-model="searchFormData.status"
-                :style="{ width: '100%' }"
-              >
-                <el-option :value="-1" label="已删除"></el-option>
-                <el-option :value="0" label="待审核"></el-option>
-                <el-option :value="1" label="已审核"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-button-group>
-              <el-button type="primary" @click="loadDataList">搜索</el-button>
-              <el-button type="success" @click="auditBatch">批量审批</el-button>
-              <el-button type="danger" @click="delBatch">批量删除</el-button>
-            </el-button-group>
-          </el-col>
-        </el-row>
-      </el-form>
-    </div>
     <div class="data-list">
+      <div class="top-panel">
+        <el-form :model="searchFormData" label-width="50px">
+          <el-row>
+            <el-col :span="4">
+              <el-form-item label="文章" prop="articleId">
+                <el-input
+                  placeholder="请输入文章Id"
+                  v-model="searchFormData.articleId"
+                  clearable
+                  @keyup.native="loadDataList"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="内容" prop="contentFuzzy">
+                <el-input
+                  placeholder="支持模糊查询"
+                  v-model="searchFormData.contentFuzzy"
+                  clearable
+                  @keyup.native="loadDataList"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="昵称" prop="nickNameFuzzy">
+                <el-input
+                  placeholder="请输入昵称"
+                  v-model="searchFormData.nickNameFuzzy"
+                  clearable
+                  @keyup.native="loadDataList"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="状态" prop="status">
+                <el-select
+                  placeholder="请选择状态"
+                  clearable
+                  v-model="searchFormData.status"
+                  :style="{ width: '100%' }"
+                >
+                  <el-option :value="-1" label="已删除"></el-option>
+                  <el-option :value="0" label="待审核"></el-option>
+                  <el-option :value="1" label="已审核"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <el-form-item label="审核" prop="audit">
+                <el-select
+                  placeholder="请选择转台"
+                  clearable
+                  v-model="searchFormData.audit"
+                  :style="{ width: '100%' }"
+                >
+                  <el-option :value="0" label="未通过"></el-option>
+                  <el-option :value="1" label="已通过"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="5">
+              <el-button-group>
+                <el-button type="primary" @click="loadDataList">搜索</el-button>
+                <el-button type="success" @click="auditBatch"
+                  >批量审批</el-button
+                >
+                <el-button type="danger" @click="delBatch">批量删除</el-button>
+              </el-button-group>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
       <Table
         ref="tableRef"
         :columns="columns"
-        :showPagination="true"
         :dataSource="tableData"
         :fetch="loadDataList"
         :options="tableOptions"
@@ -62,35 +86,35 @@
           <div class="user-info">
             <v-avatar
               color="grey-darken-3"
-              image="https://avataaars.io/?avatarStyle=Transparent&topType=ShortHairShortCurly&accessoriesType=Prescription02&hairColor=Black&facialHairType=Blank&clotheType=Hoodie&clotheColor=White&eyeType=Default&eyebrowType=DefaultNatural&mouthType=Default&skinColor=Light"
+              :image="proxy.globalInfo.avatarUrl + row.user_id"
             ></v-avatar>
             <div class="name-info">
               <div>
                 <a
-                :href="`${proxy.globalInfo.webDomain}user/123`"
-                class="a-link"
-                target="_blank"
-                >{{ row.nickName }}</a
-              >
+                  :href="`${proxy.globalInfo.webDomain}user/${row.user_id}`"
+                  class="a-link"
+                  target="_blank"
+                  >{{ row.nick_name }}</a
+                >
               </div>
-              <div>{{ row.userIpAddress }}</div>
             </div>
           </div>
         </template>
-        <!-- 查看文章 -->
+
+        <!-- 评论内容 -->
         <template #contentInfo="{ row }">
           <span>
-            <a 
-            class="a-link"
-            target="_blank"
-            :href="proxy.globalInfo.webDomain + 'post/' + row.articleId"
+            <a
+              class="a-link"
+              target="_blank"
+              :href="proxy.globalInfo.webDomain + 'post/' + row.article_id"
               >查看文章</a
             >
           </span>
           <div v-html="row.content"></div>
-          <div v-if="row.imgPath">
+          <div v-if="row.img_path">
             <CommentImage
-              :src="row.imgPath"
+              :src="proxy.globalInfo.imageUrl + row.img_path"
             ></CommentImage>
           </div>
         </template>
@@ -99,7 +123,16 @@
           <span v-if="row.status == -1" :style="{ color: 'red' }">已删除</span>
           <span v-if="row.status == 0" :style="{ color: 'red' }">待审核</span>
           <span v-if="row.status == 1" :style="{ color: 'green' }">已审核</span>
+          <div v-if="row.audit == 0" :style="{ color: 'red' }">未通过</div>
+          <div v-if="row.audit == 1" :style="{ color: 'green' }">已通过</div>
         </template>
+        <!-- 地址 -->
+        <template #addressInfo="{ row }">
+          <div>
+            {{ JSON.parse(row.user_ip_address).country_name }}
+            /{{ JSON.parse(row.user_ip_address).region }}
+          </div></template
+        >
         <!-- 操作信息 -->
         <template #op="{ row }">
           <div class="op" v-if="row.status != -1">
@@ -110,7 +143,7 @@
                   <el-dropdown-item @click="delComment(row)">
                     删除
                   </el-dropdown-item>
-                  <el-dropdown-item @click="audit(row)" v-if="row.status == 0">
+                  <el-dropdown-item @click="audit(row)" v-if="row.audit == 0">
                     审核
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -127,7 +160,6 @@
 import CommentImage from "@/views/forum/CommentImage.vue";
 import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
 const { proxy } = getCurrentInstance();
-
 // 列表
 const columns = [
   {
@@ -144,7 +176,7 @@ const columns = [
   {
     label: "点赞",
     width: 150,
-    prop: "goodCount",
+    prop: "good_count",
   },
   {
     label: "状态",
@@ -154,13 +186,14 @@ const columns = [
   },
   {
     label: "发布时间",
-    prop: "postTime",
+    prop: "post_time",
     width: 180,
   },
   {
     label: "发布地址",
     prop: "userIpAddress",
     width: 100,
+    scopedSlots: "addressInfo",
   },
   {
     label: "操作",
@@ -169,61 +202,112 @@ const columns = [
     scopedSlots: "op",
   },
 ];
-
+const api = {
+  loadComment: "/manageForum/loadComment",
+  delComment: "/manageForum/delComment",
+  auditComment: "/manageForum/auditComment",
+};
 const searchFormData = ref({});
 
 // 列表
-const tableData = ref({
-  totalCount: 5,
-  pageSize: 1,
-  pageNo: 1,
-  list: [
-    {
-      userIpAddress: "未知",
-      nickName: "葫芦弟",
-      titleInfo: "如何五天赚10亿",
-      articleId: "123",
-      content: "这是评论",
-      status: 1,
-      goodCount: 2,
-      postIpAddress: "未知",
-      postTime: "2023-01-01 12:12:12",
-    },
-    {
-      userIpAddress: "未知",
-      nickName: "葫芦弟",
-      titleInfo: "如何五天赚10亿",
-      articleId: "123",
-      content: "这是评论",
-      imgPath: proxy.globalInfo.imageUrl,
-      status: 0,
-      readCount: 1,
-      goodCount: 2,
-      postIpAddress: "未知",
-      postTime: "2023-01-01 12:12:12",
-    },
-  ],
-});
+const tableData = ref({});
 const tableOptions = {
-  extHeight: 70,
+  extHeight: 95,
   selectType: "checkbox",
 };
-
-const loadDataList = () => {};
+// 加载信息
+const loadDataList = async () => {
+  let params = {
+    pageNo: tableData.value.pageNo,
+    pageSize: tableData.value.pageSize,
+    articleId: searchFormData.value.articleId,
+    contentFuzzy: searchFormData.value.contentFuzzy,
+    nickNameFuzzy: searchFormData.value.nickNameFuzzy,
+    status: searchFormData.value.status,
+    audit: searchFormData.value.audit,
+  };
+  let result = await proxy.Request({
+    url: api.loadComment,
+    showLoading: false,
+    params: params,
+  });
+  if (!result) {
+    return;
+  }
+  tableData.value = result.data;
+};
+loadDataList();
 // 批量选择
 const seleckBatchList = ref([]);
 const setRowSelected = (rows) => {
   seleckBatchList.value = [];
   rows.forEach((element) => {
-    seleckBatchList.value.push(element.articleId);
+    seleckBatchList.value.push(element.comment_id);
   });
 };
 // 批量审批
-const auditBatch=()=>{
-
-}
+const tableRef=ref();
+const auditBatch = () => {
+  proxy.Confirm("你确定要批量审批吗？", async () => {
+    let result = await proxy.Request({
+      url: api.auditComment,
+      params: {
+        commentIds: seleckBatchList.value,
+      },
+    });
+    if (!result) {
+      return;
+    }
+    tableRef.value.clearSelection();
+    loadDataList();
+  });
+};
+// 单条审核
+const audit = (row) => {
+  proxy.Confirm(`你确定要审核通过此评论吗？`, async () => {
+    let result = await proxy.Request({
+      url: api.auditComment,
+      params: {
+        commentIds: row.comment_id,
+      },
+    });
+    if (!result) {
+      return;
+    }
+    loadDataList();
+  });
+};
 // 批量删除
-const delBatch=()=>{}
+const delBatch = () => {
+    proxy.Confirm("你确定要批量删除吗？", async () => {
+    let result = await proxy.Request({
+      url: api.delComment,
+      params: {
+        commentIds: seleckBatchList.value,
+      },
+    });
+    if (!result) {
+      return;
+    }
+    tableRef.value.clearSelection();
+    loadDataList();
+  });
+};
+// 单个删除
+const delComment=(row)=>{
+  proxy.Confirm(`确定要删除此评论吗？`, async () => {
+    let result = await proxy.Request({
+      url: api.delComment,
+      params: {
+        commentIds: row.comment_id,
+      },
+    });
+    if (!result) {
+      return;
+    }
+    loadDataList();
+  });
+}
 </script>
 
 <style lang="scss" scoped>

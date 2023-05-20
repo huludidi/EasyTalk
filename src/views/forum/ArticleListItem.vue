@@ -3,25 +3,32 @@
     <div class="article-item-inner">
       <div class="article-body">
         <div class="user-info">
-          <v-hover v-slot="{ isHovering, props }" close-delay="200">
+          <v-hover v-slot="{ isHovering, props }" >
             <v-card
-              :elevation="isHovering ? 16 : 1"
-              :class="{ 'on-hover': isHovering }"
-              v-ripple="{ center: true }"
-              v-bind="props"
+              v-ripple="data.status==-1?'':{ center: true }"
+              v-bind="data.status==-1?'': props"
+              :elevation="isHovering ? 20 : data.status==-1?0:1"
+              :class="data.status==-1?'':{ 'on-hover': isHovering }"
               class="mx-auto"
               max-width="1300"
               max-height="200px"
-              @click="loadArticleDetail()"
+              @click="data.status==-1?'':loadArticleDetail()"
+
             >
               <div class="flex-no-wrap justify-space-between">
                 <div class="detail">
                   <div class="content-side">
                     <v-card-title class="text-h5">
-                      <v-chip color="rgb(50, 133, 255)" v-if="data.audit">
-                        <v-card-title>Title</v-card-title> 
+                      <v-chip
+                        color="rgb(50, 133, 255)"
+                        v-if="data.status==1 && data.audit==1"
+                      >
+                        <v-card-title>Title</v-card-title>
                       </v-chip>
-                      <v-chip v-else color="#FB3624">
+                      <v-chip v-else-if="data.status==-1" color="#FB3624">
+                        <div class="no-pass">文章已删除</div>
+                      </v-chip>
+                      <v-chip v-else-if="data.audit==0" color="#FB3624">
                         <div class="no-pass">审核未通过</div>
                       </v-chip>
                       <span :style="{ 'margin-left': '5px' }">
@@ -43,10 +50,7 @@
                         <template v-slot:prepend>
                           <v-avatar
                             color="grey-darken-3"
-                            :image="
-                              proxy.globalInfo.avatarUrl +
-                              data.author_id 
-                            "
+                            :image="proxy.globalInfo.avatarUrl + data.author_id"
                             class="animate__animated animate__rotateIn"
                           ></v-avatar>
                         </template>
@@ -98,9 +102,12 @@
                   </div>
                   <div class="cover-side">
                     <el-image
-                    class="animate__animated animate__fadeInDown animate_duration-5s"
+                      class="animate__animated animate__fadeInDown animate_duration-5s"
                       style="width: 200px; height: 200px; display: block"
-                      :src="proxy.globalInfo.imageUrl + (data.cover ? data.cover : '1/1')"
+                      :src="
+                        proxy.globalInfo.imageUrl +
+                        (data.cover ? data.cover : '1/1')
+                      "
                       fit="fill"
                     />
                   </div>
@@ -127,11 +134,11 @@ const props = defineProps({
     type: Object,
   },
 });
-const loadArticleDetail=()=>{
+const loadArticleDetail = () => {
   window.scrollTo(0, 0);
-  store.commit("setActiveBoard",props.data.p_board_id)
-  router.push("/post/"+props.data.article_id)
-}
+  store.commit("setActiveBoard", props.data.p_board_id);
+  router.push("/post/" + props.data.article_id);
+};
 </script>
 
 <style lang="scss" scoped>

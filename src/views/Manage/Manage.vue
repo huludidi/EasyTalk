@@ -71,8 +71,8 @@
                 :name="item.path"
                 :label="item.menuName"
               >
-                <router-view /></el-tab-pane
-              >
+                <router-view
+              /></el-tab-pane>
             </el-tabs>
           </div>
         </el-main>
@@ -143,6 +143,10 @@ const menuList = [
       {
         menuName: "系统设置",
         path: "/manage/settings/sys",
+      },
+      {
+        menuName: "学校设置",
+        path: "/manage/settings/school",
       },
     ],
   },

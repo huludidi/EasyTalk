@@ -66,7 +66,7 @@
         :total="dataSource.totalCount"
         :page-sizes="[15, 30, 50, 100]"
         :page-size="dataSource.pageSize"
-        :current-page.sync="dataSource.pageNo"
+        :current-page="dataSource.pageNo"
         layout="total,sizes,prev,pager,next,jumper"
         @size-change="handlePageSizeChange"
         @current-change="handlePageNoChange"
@@ -150,7 +150,7 @@ const handleSelectionChange = (row) => {
 
 // 切换每页大小
 const handlePageSizeChange = (size) => {
-  props.dataSource.pageSie = size;
+  props.dataSource.pageSize = size;
   props.dataSource.pageNo = 1;
   props.fetch();
 };
