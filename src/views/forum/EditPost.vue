@@ -112,7 +112,7 @@ import {
   watch,
   nextTick,
 } from "vue";
-import {ElMessageBox} from "element-plus";
+import { ElMessageBox } from "element-plus";
 import { useRouter, useRoute } from "vue-router";
 const { proxy } = getCurrentInstance();
 const router = useRouter();
@@ -137,8 +137,10 @@ const checkBoard = (rule, value, callback) => {
   }
 };
 const rules = {
-  title: [{ required: true, message: "请输入标题" },
-  {max:150,message:"标题过长"}],
+  title: [
+    { required: true, message: "请输入标题" },
+    { max: 150, message: "标题过长" },
+  ],
   boardIds: [{ required: true, message: "请选择板块", validator: checkBoard }],
   summary: [{ required: true, message: "请输入文章摘要" }],
   content: [{ required: true, message: "请输入正文" }],
@@ -177,19 +179,18 @@ const postHandler = () => {
       delete params.attachment;
     }
     let result = await proxy.Request({
-      url:params.article_id?api.updateArticle:api.postArticle,
-      params:params,
-      showLoading:false,
-    })
-    if(!result){
-      return
+      url: params.article_id ? api.updateArticle : api.postArticle,
+      params: params,
+    });
+    if (!result) {
+      return;
     }
-    if(result.data.audit){
-    proxy.Message.success("保存成功");
-    }else{
-      proxy.Message.error("此文章审核不通过，请注意内容及图片的合法性")
+    if (!result.data.audit) {
+      proxy.Message.error("此文章审核不通过，请注意内容及封面的合法性");
+    } else {
+      proxy.Message.success("保存成功");
     }
-    router.push(`/post/${result.data.article_id}`)
+    router.push(`/post/${result.data.article_id}`);
   });
 };
 

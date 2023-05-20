@@ -26,6 +26,7 @@ import AttachmentSelector from '@/components/AttachmentSelector.vue'
 import CoverUpload from '@/components/CoverUpload.vue'
 import Table from '@/components/Table.vue'
 import NoData from '@/components/NoData.vue'
+import ArticleListLoading from '@/components/ArticleListLoading.vue'
 
 
 loadFonts()
@@ -60,5 +61,6 @@ app.component("AttachmentSelector",AttachmentSelector)
 app.component("CoverUpload",CoverUpload)
 app.component("Table",Table)
 app.component("NoData",NoData)
+app.component("ArticleListLoading", ArticleListLoading)
 
 app.mount('#app')

@@ -22,7 +22,7 @@
           <el-button
             v-for="(btn, index) in buttons"
             :key="index"
-            :type="btn.type"
+            :type="btn.type||'primary'"
             @click="btn.click"
           >
             {{ btn.text }}

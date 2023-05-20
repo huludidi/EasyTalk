@@ -7,8 +7,8 @@
       class="search-panel"
       :style="{ 'padding-top': startSearch ? '0px' : '200px' }"
     >
-      <el-form :model="formData" :rules="rules" ref="formDataRef">
-        <el-form-item prop="">
+      <el-form :model="formData" :rules="rules" @submit.native.prevent ref="formDataRef">
+        <el-form-item prop="keyword">
           <el-input
             size="large"
             placeholder="请输入想要搜索的内容"
@@ -71,21 +71,26 @@ const articleListInfo = ref({});
 const startSearch = ref(false);
 const loading = ref(false);
 const search = async () => {
-  loading.value = true;
-  let params = {
-    pageNo: articleListInfo.value.pageNo,
-    keyword: formData.value.keyword,
-  };
-  let result = await proxy.Request({
-    url: api.search,
-    showLoading: false,
-    params: params,
+  formDataRef.value.validate(async (valid) => {
+    if (!valid) {
+      return;
+    }
+    loading.value = true;
+    let params = {
+      pageNo: articleListInfo.value.pageNo,
+      keyword: formData.value.keyword,
+    };
+    let result = await proxy.Request({
+      url: api.search,
+      showLoading: false,
+      params: params,
+    });
+    loading.value = false;
+    if (!result) {
+      return;
+    }
+    articleListInfo.value = result.data;
   });
-  loading.value = false;
-  if (!result) {
-    return;
-  }
-  articleListInfo.value = result.data;
 };
 const startSearchHandler = () => {
   startSearch.value = true;

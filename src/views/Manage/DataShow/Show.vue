@@ -1,58 +1,144 @@
 <template>
-  <div class="map-container" ref="mapContainer"></div>
+  <div :style="{ 'max-height': '635px', 'overflow-y': 'auto' }">
+    <v-row no-gutters>
+      <v-col cols="6">
+        <v-card>
+          <div class="map-container" ref="mapContainer"></div>
+        </v-card>
+      </v-col>
+      <v-col cols="6">
+        <v-card :style="{ 'margin-left': '10px', height: '400px' }">
+          <v-card-title>最近注册用户</v-card-title>
+          <v-divider></v-divider>
+          <div class="user-box">
+            <v-row>
+              <v-col cols="3" v-for="(item, key) in userInfo" :key="key">
+                <div class="user-info">
+                  <v-avatar
+                    size="100"
+                    :image="proxy.globalInfo.avatarUrl + item.user_id"
+                    class="animate__animated animate__rotateIn"
+                  ></v-avatar>
+                  <span>{{ item.join_time }}</span>
+                </div>
+              </v-col>
+            </v-row>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
-<script>
-import { onMounted, ref } from "vue";
+<script setup>
+import { ref, getCurrentInstance, onMounted, onBeforeUnmount } from "vue";
+const { proxy } = getCurrentInstance();
+
 import L from "leaflet";
-
-export default {
-  name: "CountryMap",
-  setup() {
-    const mapContainer = ref(null);
-
-    onMounted(() => {
-      var corner1 =  L.latLng(-90, -180); //设置左上角经纬度
-    var corner2 = L.latLng(90, 180);	//设置右下点经纬度
-    var bounds = L.latLngBounds(corner1, corner2); //构建视图限制范围
-      // 创建地图实例
-      const map = L.map(mapContainer.value,{
-        maxBounds:bounds,
-        maxZoom:5,
-        minZoom:2
-      }).setView([0, 0], 2);
-
-      // 添加底图瓦片图层
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "Map data © OpenStreetMap contributors",
-      }).addTo(map);
-
-      // 根据国家的名称和经纬度数据创建散点标记
-      const markerData = [
-        { name: "中国 12", latlng: [35.86166, 104.195397] },
-        { name: "沈阳 1", latlng: [41.796767,123.429096] },
-        { name: "美国", latlng: [37.09024, -95.712891] },
-        { name: "日本", latlng: [36.204824, 138.252924] },
-        { name: "法国", latlng: [46.227638, 2.213749] },
-        { name: "德国", latlng: [51.165691, 10.451526] },
-        { name: "加拿大", latlng: [56.130366, -106.346771] },
-        { name: "澳大利亚", latlng: [-25.274398, 133.775136] },
-      ];
-      markerData.forEach(({ name, latlng }) => {
-        L.marker(latlng).bindPopup(name).addTo(map);
-      });
-    });
-
-    return {
-      mapContainer,
-    };
-  },
+const api = {
+  recentJoinUser: "/statistics/recentJoinUser",
+  scatterPlot: "/statistics/scatterPlot",
+  articleTypeData: "/statistics/articleTypeData",
 };
+
+// 散点图
+const mapContainer = ref(null);
+let map;
+onMounted(() => {
+  loadMarkerData();
+  loadArticleStatisticData();
+});
+onBeforeUnmount(() => {
+  if (map) {
+    map.remove();
+  }
+});
+const markerData = ref([]);
+const loadMarkerData = async () => {
+  var corner1 = L.latLng(-90, -180);
+  var corner2 = L.latLng(90, 180);
+  var bounds = L.latLngBounds(corner1, corner2);
+  // 创建地图实例
+  map = L.map(mapContainer.value, {
+    maxBounds: bounds,
+    maxZoom: 15,
+    minZoom: 1,
+  }).setView([0, 0], 1);
+
+  // 添加底图瓦片图层
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "Map data © OpenStreetMap contributors",
+  }).addTo(map);
+
+  let result = await proxy.Request({
+    url: api.scatterPlot,
+    showLoading: false,
+  });
+  if (!result) {
+    return;
+  }
+  // 根据国家的名称和经纬度数据创建散点标记
+  const markerDataArr = [];
+  for (let item of result.data) {
+    markerDataArr.push({
+      name: item.ch_name + " " + item.count,
+      latlng: [item.latitude, item.longitude],
+    });
+  }
+  markerData.value = markerDataArr;
+  markerData.value.forEach(({ name, latlng }) => {
+    L.marker(latlng).bindPopup(name).addTo(map);
+  });
+};
+
+// 文章统计信息
+const ArticleStatisticData = ref([]);
+const loadArticleStatisticData = async () => {
+  let result = await proxy.Request({
+    url: api.articleTypeData,
+    showLoading: false,
+  });
+  ArticleStatisticData.value = result.data;
+};
+
+// 注册用户信息
+const userInfo = ref({});
+const loadRecenUserInfo = async () => {
+  let result = await proxy.Request({
+    url: api.recentJoinUser,
+    showLoading: false,
+  });
+  if (!result) {
+    return;
+  }
+  userInfo.value = result.data.slice(0, 8);
+};
+loadRecenUserInfo();
 </script>
 
-<style scoped>
-  @import "https://unpkg.com/leaflet@1.0.3/dist/leaflet.css";
+<style lang="scss" scoped>
+@import "https://unpkg.com/leaflet@1.0.3/dist/leaflet.css";
 .map-container {
-  height: 500px;
+  height: 400px;
+}
+.ma1 {
+  margin-top: 8px;
+  margin-right: 8px;
+}
+.ma2 {
+  margin-top: 8px;
+  margin-left: 8px;
+}
+.user-box {
+  padding: 0 10px 0 10px;
+  display: flex;
+  .user-info {
+    padding: 5px 10px 0 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 150px;
+    justify-content: space-around;
+  }
 }
 </style>
