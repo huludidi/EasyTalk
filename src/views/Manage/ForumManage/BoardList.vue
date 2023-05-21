@@ -24,31 +24,34 @@
             <template #cover="{ row }">
               <v-avatar
                 color="grey-darken-3"
-                image="https://avataaars.io/?avatarStyle=Transparent&topType=ShortHairShortCurly&accessoriesType=Prescription02&hairColor=Black&facialHairType=Blank&clotheType=Hoodie&clotheColor=White&eyeType=Default&eyebrowType=DefaultNatural&mouthType=Default&skinColor=Light"
+                :image="
+                  proxy.globalInfo.imageUrl +
+                  (row.cover == null ? '1/1' : row.cover)
+                "
               ></v-avatar>
             </template>
             <!-- 类别信息 -->
             <template #boardInfo="{ row }">
-              <div>类别名称：{{ row.boardName }}</div>
-              <div>发帖权限：{{ postTypeMap[row.postType] }}</div>
+              <div>类别名称：{{ row.board_name }}</div>
+              <div>发帖权限：{{ postTypeMap[row.post_type] }}</div>
             </template>
             <template #op="{ index, row }">
               <div class="op">
                 <a
                   href="javascript:void(0)"
                   class="a-link"
-                  @click="showEdit('update', 1, row)"
+                  @click="showEdit('update', 0, row)"
                   >修改</a
                 >
                 <el-divider direction="vertical"></el-divider>
-                <a href="javascript:void(0)" class="a-link" @click="del(row)"
+                <a class="a-link" @click="del(row)"
                   >删除</a
                 >
                 <el-divider direction="vertical"></el-divider>
                 <a
                   href="javascript:void(0)"
                   :class="[index == 0 ? 'not-allow' : 'a-link']"
-                  @click="changeSort(index, 'up', 1)"
+                  @click="changeSort(index, 'up', 0)"
                   >上移</a
                 >
                 <el-divider direction="vertical"></el-divider>
@@ -57,7 +60,7 @@
                   :class="[
                     index == tableData.list.length - 1 ? 'not-allow' : 'a-link',
                   ]"
-                  @click="changeSort(index, 'down', 1)"
+                  @click="changeSort(index, 'down', 0)"
                   >下移</a
                 >
               </div>
@@ -88,13 +91,16 @@
             <template #cover="{ row }">
               <v-avatar
                 color="grey-darken-3"
-                image="https://avataaars.io/?avatarStyle=Transparent&topType=ShortHairShortCurly&accessoriesType=Prescription02&hairColor=Black&facialHairType=Blank&clotheType=Hoodie&clotheColor=White&eyeType=Default&eyebrowType=DefaultNatural&mouthType=Default&skinColor=Light"
+                :image="
+                  proxy.globalInfo.imageUrl +
+                  (row.cover == null ? '1/1' : row.cover)
+                "
               ></v-avatar>
             </template>
             <!-- 类别信息 -->
             <template #boardInfo="{ row }">
-              <div>类别名称：{{ row.boardName }}</div>
-              <div>发帖权限：{{ postTypeMap[row.postType] }}</div>
+              <div>类别名称：{{ row.board_name }}</div>
+              <div>发帖权限：{{ postTypeMap[row.post_type] }}</div>
             </template>
             <template #op="{ index, row }">
               <div class="op">
@@ -119,7 +125,7 @@
                 <a
                   href="javascript:void(0)"
                   :class="[
-                    index == tableData.list.length - 1 ? 'not-allow' : 'a-link',
+                    index == tableChildData.list.length - 1 ? 'not-allow' : 'a-link',
                   ]"
                   @click="changeSort(index, 'down', 1)"
                   >下移</a
@@ -141,30 +147,30 @@
       <el-form>
         <el-form-item
           label="一级板块"
-          prop="boardName"
-          v-if="formData.boardType == 1"
+          prop="p_board_name"
+          v-if="formData.board_type == 1"
         >
-          {{ formData.pBoardName }}
+          {{ formData.p_board_name }}
         </el-form-item>
-        <el-form-item label="板块名称" prop="boardName">
-          <el-input placeholder="请输入名称" v-model="formData.boardName">
+        <el-form-item label="板块名称" prop="board_name">
+          <el-input placeholder="请输入名称" v-model="formData.board_name">
           </el-input>
         </el-form-item>
-        <el-form-item label="发帖权限" prop="postType">
-          <el-radio-group v-model="formData.postType">
-            <el-radio :label="1">{{ postTypeMap[1] }}</el-radio>
-            <el-radio :label="0">{{ postTypeMap[0] }}</el-radio>
+        <el-form-item label="发帖权限" prop="post_type">
+          <el-radio-group v-model="formData.post_type">
+            <el-radio :label="true">{{ postTypeMap[true] }}</el-radio>
+            <el-radio :label="false">{{ postTypeMap[false] }}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="封面" prop="cover">
           <CoverUpload v-model="formData.cover"></CoverUpload>
         </el-form-item>
-        <el-form-item label="简介" prop="boardDesc">
+        <el-form-item label="简介" prop="board_desc">
           <el-input
             placeholder="请输入简介"
             text="textarea"
-            v-model="formData.boardDesc"
-            :autosize="{minRows:4,maxRows:4}"
+            v-model="formData.board_desc"
+            :autosize="{ minRows: 4, maxRows: 4 }"
           >
           </el-input>
         </el-form-item>
@@ -183,10 +189,15 @@ import {
   nextTick,
 } from "vue";
 const { proxy } = getCurrentInstance();
-
+const api = {
+  loadBoard: "/manageBoard/loadBoard",
+  saveBoard: "/manageBoard/saveBoard",
+  delBoard: "/manageBoard/delBoard",
+  changeBoardSort: "/manageBoard/changeBoardSort",
+};
 const postTypeMap = {
-  0: "只允许管理员发帖",
-  1: "任何人都可以发帖",
+  false: "只允许管理员发帖",
+  true: "任何人都可以发帖",
 };
 // 列表
 const columns = [
@@ -204,7 +215,7 @@ const columns = [
   },
   {
     label: "简介",
-    prop: "boardDesc",
+    prop: "board_desc",
   },
   {
     label: "操作",
@@ -213,58 +224,38 @@ const columns = [
     scopedSlots: "op",
   },
 ];
-const dataTableRef = ref();
-const tableData = ref({
-  list: [
-    {
-      boardId: 1,
-      boardName: "求助",
-      postType: 1,
-      boardDesc: "这是简介",
-      children: [
-        { boardName: "租房", postType: 1, boardDesc: "这是简介" },
-        { boardName: "找室友", postType: 1, boardDesc: "这是简介" },
-      ],
-    },
-    {
-      boardId: 2,
-      boardName: "分享",
-      postType: 1,
-      boardDesc: "这是简介",
-      children: [
-        { boardName: "学习分享", postType: 1, boardDesc: "这是简介" },
-        { boardName: "经验分享", postType: 1, boardDesc: "这是简介" },
-      ],
-    },
-    {
-      boardId: 3,
-      boardName: "指南",
-      postType: 1,
-      boardDesc: "这是简介",
-      children: [
-        { boardName: "求学指南", postType: 1, boardDesc: "这是简介" },
-        { boardName: "回国指南", postType: 1, boardDesc: "这是简介" },
-      ],
-    },
-  ],
-});
 const tableOptions = {
   extHeight: 110,
 };
+
+const dataTableRef = ref();
+const tableData = ref({});
 const tableChildData = ref({});
 // 加载数据
 const currentBoard = ref(null);
 const loadDataList = async () => {
+  let result = await proxy.Request({
+    url: api.loadBoard,
+    showLoading: false,
+  });
+  if (!result) {
+    return;
+  }
+  tableData.value.list = result.data;
   if (currentBoard.value == null && tableData.value.list.length > 0) {
     rowClick(tableData.value.list[0]);
   } else {
+    currentBoard.value = result.data.find((item) => {
+      return item.board_id == currentBoard.value.board_id;
+    });
     rowClick(currentBoard.value);
   }
   nextTick(() => {
-    dataTableRef.value.setCurrentRow("boardId", currentBoard.value.boardId);
+    dataTableRef.value.setCurrentRow("board_id", currentBoard.value.board_id);
   });
 };
-
+loadDataList();
+// 选择一级板块加载二级板块
 const rowClick = (row) => {
   currentBoard.value = row;
   tableChildData.value.list = row.children;
@@ -287,8 +278,8 @@ const dialogConfig = reactive({
 const formData = ref({});
 const formDataRef = ref();
 const rules = {
-  boardName: [{ required: true, message: "请输入板块名称" }],
-  postType: [{ required: true, message: "请选择发帖权限" }],
+  board_name: [{ required: true, message: "请输入板块名称" }],
+  post_type: [{ required: true, message: "请选择发帖权限" }],
 };
 const showEdit = (opType, boardType, data) => {
   dialogConfig.show = true;
@@ -306,15 +297,81 @@ const showEdit = (opType, boardType, data) => {
         };
       }
     }
-    formData.value.boardType = boardType;
+    formData.value.board_type = boardType;
     if (boardType == 1) {
-      formData.value.pBoardName = currentBoard.value.boardName;
-      formData.value.pBoardId = currentBoard.value.boardId;
+      formData.value.p_board_name = currentBoard.value.board_name;
+      formData.value.p_board_id = currentBoard.value.board_id;
     } else {
-      formData.value.pBoardId = 0;
+      formData.value.p_board_id = 0;
     }
   });
 };
+// 提交修改
+const submitForm = async () => {
+  let result = await proxy.Request({
+    url: api.saveBoard,
+    showLoading: false,
+    params: formData.value,
+  });
+  if (!result) {
+    return;
+  }
+  loadDataList();
+  proxy.Message.success("修改成功");
+  dialogConfig.show = false;
+};
+// 删除板块
+const del = (data) => {
+  proxy.Confirm(`你确定要删除${data.board_name}吗？`, async () => {
+    let result = await proxy.Request({
+      url: api.delBoard,
+      showLoading: false,
+      params:{
+        board_id:data.board_id
+      }
+    });
+    if (!result) {
+      return;
+    }
+    if(currentBoard.value.board_id==data.board_id){
+      currentBoard.value=null;
+    }
+    loadDataList();
+  });
+};
+// 修改顺序
+const changeSort=async(index,type,boardType)=>{
+  let dataList=tableData.value.list;
+  if(boardType==1){
+    dataList=tableChildData.value.list;
+  }
+  if(
+    (type==="down" && index==dataList.length-1)||
+    (type==="up"&&index==0)
+  ){
+    return
+  }
+  let temp = dataList[index];
+  let number=type=="down"?1:-1;
+  dataList.splice(index,1);
+  dataList.splice(index+number,0,temp);
+  let boardIdList=[];
+  dataList.forEach(element=>{
+    boardIdList.push(element.board_id);
+  })
+  let result=await proxy.Request({
+    url:api.changeBoardSort,
+    showLoading:false,
+    params:{
+      boardIds:boardIdList
+    }
+  })
+  if(!result){
+    return
+  }
+  proxy.Message.success("排序成功");
+  loadDataList();
+}
 </script>
 
 <style lang="scss" scoped>

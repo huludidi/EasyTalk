@@ -71,7 +71,8 @@ const goToUcenter = () => {
 };
 const goTomanage = () => {
   nextTick(() => {
-    router.push("/manage");
+    // router.push("/manage");
+     window.open("/manage", "_blank");
   });
 };
 const logout = ()=>{

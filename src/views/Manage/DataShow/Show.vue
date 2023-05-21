@@ -2,12 +2,18 @@
   <div :style="{ 'max-height': '635px', 'overflow-y': 'auto' }">
     <v-row no-gutters>
       <v-col cols="6">
-        <v-card>
+        <v-card
+          elevation="5"
+          :style="{ margin: '5px 0 0 5px', height: '400px' }"
+        >
           <div class="map-container" ref="mapContainer"></div>
         </v-card>
       </v-col>
       <v-col cols="6">
-        <v-card :style="{ 'margin-left': '10px', height: '400px' }">
+        <v-card
+          elevation="5"
+          :style="{ margin: '5px 0 0 5px', height: '400px' }"
+        >
           <v-card-title>最近注册用户</v-card-title>
           <v-divider></v-divider>
           <div class="user-box">
@@ -26,15 +32,33 @@
           </div>
         </v-card>
       </v-col>
+      <v-col cols="6">
+        <v-card
+          elevation="5"
+          :style="{ margin: '10px 0 10px 5px', height: '400px' }"
+        >
+          <ArticleStatistic></ArticleStatistic>
+        </v-card>
+      </v-col>
+      <v-col cols="6">
+        <v-card
+          elevation="5"
+          :style="{ margin: '10px 0 10px 5px', height: '400px' }"
+        >
+          <SchoolStatistic></SchoolStatistic>
+        </v-card>
+      </v-col>
     </v-row>
   </div>
 </template>
 
 <script setup>
 import { ref, getCurrentInstance, onMounted, onBeforeUnmount } from "vue";
+import L from "leaflet";
+import ArticleStatistic from "./ArticleStatistic.vue";
+import SchoolStatistic from "./SchoolStatistic.vue"
 const { proxy } = getCurrentInstance();
 
-import L from "leaflet";
 const api = {
   recentJoinUser: "/statistics/recentJoinUser",
   scatterPlot: "/statistics/scatterPlot",
@@ -46,7 +70,6 @@ const mapContainer = ref(null);
 let map;
 onMounted(() => {
   loadMarkerData();
-  loadArticleStatisticData();
 });
 onBeforeUnmount(() => {
   if (map) {
@@ -89,16 +112,6 @@ const loadMarkerData = async () => {
   markerData.value.forEach(({ name, latlng }) => {
     L.marker(latlng).bindPopup(name).addTo(map);
   });
-};
-
-// 文章统计信息
-const ArticleStatisticData = ref([]);
-const loadArticleStatisticData = async () => {
-  let result = await proxy.Request({
-    url: api.articleTypeData,
-    showLoading: false,
-  });
-  ArticleStatisticData.value = result.data;
 };
 
 // 注册用户信息
