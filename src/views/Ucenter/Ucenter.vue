@@ -34,12 +34,12 @@
                     class="border-opacity-25"
                   ></v-divider>
                 </div>
-                <div class="desc">
+                <div class="desc" >
                   <v-icon
                     size="small"
                     icon="mdi mdi-card-account-details"
                   ></v-icon>
-                  {{ userInfo.personDescription }}
+                  {{ userInfo.personDescription?userInfo.personDescription:"这家伙很懒，什么都没有留下" }}
                 </div>
                 <div class="editor-btn">
                   <v-btn

@@ -5,7 +5,7 @@
         class="header-content"
         :style="{ width: proxy.globalInfo.bodyWidth + 'px' }"
       >
-        <router-link to="" @click="goFirstPage()" class="logo">
+        <router-link to="" @click="goFirstPage" class="logo">
           <span
             v-for="(item, index) in logoInfo"
             :key="index"
@@ -44,7 +44,7 @@
                 </v-chip>
               </v-chip-group>
             </el-popover>
-            <v-chip color="#25B24E">资源 </v-chip>
+            <v-chip color="#25B24E" @click="goResource" :value="1">周边</v-chip>
           </v-chip-group>
         </div>
         <!-- 登录、注册、用户信息 -->
@@ -136,7 +136,7 @@
                       ></v-badge>
                     </el-dropdown-item>
                     <el-dropdown-item
-                      @click="gotoMessage('arrachmentDownload')"
+                      @click="gotoMessage('attachmentDownload')"
                       class="manage-item"
                     >
                       <v-icon icon="mdi-file-cloud"></v-icon>
@@ -199,6 +199,7 @@
 </template>
 
 <script setup>
+import {ElMessageBox} from "element-plus"
 import { useStore } from "vuex";
 import LoginAndRegister from "./LoginAndRegister.vue";
 import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
@@ -319,10 +320,12 @@ const subselection = ref(0);
 watch(
   () => store.state.activeBoard,
   (newVal, oldVal) => {
+    console.log(newVal);
     if (newVal != oldVal) {
       selection.value = newVal;
     }
-  }
+  },
+  { immediate: true, deep: true }
 );
 const allHandler = () => {
   store.commit("setActiveBoard", 0);
@@ -336,6 +339,7 @@ const subBoardClickHandler = (subBoard) => {
 };
 // 点击图标跳转
 const goFirstPage = () => {
+  selection.value = 0;
   store.commit("setActiveBoard", 0);
   router.push("/");
 };
@@ -364,12 +368,35 @@ watch(
   },
   { immediate: true, deep: true }
 );
-
+// 周边
+const goResource = () => {
+  if (!store.getters.getLoginUserInfo) {
+    loginAndregister(1);
+  } else {
+    if (!store.getters.getLoginUserInfo.school) {
+      ElMessageBox.alert("请先绑定学校", "提示", {
+        "show-close": false,
+        callback: (action) => {
+          router.go(-1);
+        },
+      });
+    }
+  }
+  router.push("/forum/resource");
+};
 // 发帖
 const newPost = () => {
   if (!store.getters.getLoginUserInfo) {
     loginAndregister(1);
   } else {
+    if (!store.getters.getLoginUserInfo.school) {
+      ElMessageBox.alert("请先绑定学校", "提示", {
+        "show-close": false,
+        callback: (action) => {
+          router.go(-1);
+        },
+      });
+    }
     router.push("/newPost");
   }
 };
@@ -405,9 +432,9 @@ const onMouseLeave = () => {
   isHovering.value = false;
 };
 
-const goSearch=()=>{
+const goSearch = () => {
   router.push("/search");
-}
+};
 </script>
 
 <style lang="scss">

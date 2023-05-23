@@ -51,6 +51,7 @@
 </template>
 
 <script setup>
+import {ElMessageBox} from "element-plus"
 import CommentImage from "./CommentImage.vue";
 import { ref, getCurrentInstance, watch } from "vue";
 import { useStore } from "vuex";

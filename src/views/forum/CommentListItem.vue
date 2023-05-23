@@ -106,6 +106,7 @@
 </template>
 
 <script setup>
+import {ElMessageBox} from "element-plus"
 import CommentImage from "./CommentImage.vue";
 import PostComment from "./PostComment.vue";
 import { ref, getCurrentInstance, watch } from "vue";

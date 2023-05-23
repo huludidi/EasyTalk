@@ -27,8 +27,7 @@ import CoverUpload from '@/components/CoverUpload.vue'
 import Table from '@/components/Table.vue'
 import NoData from '@/components/NoData.vue'
 import ArticleListLoading from '@/components/ArticleListLoading.vue'
-
-
+import ResourceItem from '@/components/ResourceItem.vue'
 loadFonts()
 
 const app = createApp(App)
@@ -62,5 +61,6 @@ app.component("CoverUpload",CoverUpload)
 app.component("Table",Table)
 app.component("NoData",NoData)
 app.component("ArticleListLoading", ArticleListLoading)
+app.component("ResourceItem", ResourceItem)
 
 app.mount('#app')

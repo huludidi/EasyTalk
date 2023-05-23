@@ -109,15 +109,19 @@ interface RestaurantItem {
   value: string;
 }
 const restaurants = ref<RestaurantItem[]>([]);
-
-const querySearch = (queryString: string, cb: any) => {
+const querySearch = (queryString: string, cb: (arg: any) => void) => {
+  console.log(restaurants.value);
+  let timeout: NodeJS.Timeout
   const results = queryString
     ? restaurants.value.filter(createFilter(queryString))
     : restaurants.value;
-  // call callback function to return suggestions
-  cb(results);
-};
+  clearTimeout(timeout);
+  timeout = setTimeout(() => {
+    cb(results);
+  }, 3000 * Math.random());
 
+  // cb(results);
+};
 const createFilter = (queryString: string) => {
   return (restaurant: RestaurantItem) => {
     return (
@@ -125,18 +129,21 @@ const createFilter = (queryString: string) => {
     );
   };
 };
-
 const loadSchoolInfo = async () => {
   try {
     const result = await proxy.Request({
       url: api.getSchoolInfo,
       showLoading: false,
+      params:{
+        pageNo:1,
+        pageSize:10000
+      }
     });
     if (!result || !result.data || result.data.length === 0) {
       console.error("Error: No data found.");
       return [];
     }
-    const info = result.data.map((element: any) => ({
+    const info = result.data.list.map((element: any) => ({
       value: element.ch_name,
     }));
     return info;
@@ -147,7 +154,8 @@ const loadSchoolInfo = async () => {
 };
 
 onMounted(async () => {
-  restaurants.value = await loadSchoolInfo();
+  const info = await loadSchoolInfo();
+  restaurants.value = info;
 });
 
 const dialogConfig = reactive({

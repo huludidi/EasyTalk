@@ -15,6 +15,11 @@ const router = createRouter({
           component: () => import('@/views/forum/ArticleList.vue'),
         },
         {
+          path: '/forum/resource',
+          name: "周边资源",
+          component: () => import('@/views/forum/AroundResource.vue'),
+        },
+        {
           path: '/forum/:pBoardId',
           name: "一级板块",
           component: () => import('@/views/forum/ArticleList.vue'),

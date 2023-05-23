@@ -28,7 +28,6 @@ const loadSchoolSort = async () => {
   let result = await proxy.Request({
     url: api.loadSchoolSort,
     showLoading:false
-
   });
   if (!result) {
     return;
@@ -40,7 +39,7 @@ const loadSchoolSort = async () => {
     const key = keys[i];
     let cover = sortInfo.value[key].cover==null?"11/11":sortInfo.value[key].cover
     let dict = {
-      prependAvatar: proxy.globalInfo.imageUrl + cover,
+      // prependAvatar: proxy.globalInfo.imageUrl + cover,
       title: sortInfo.value[key].ch_name,
       subtitle: "发布数量：" + sortInfo.value[key].count,
     };
