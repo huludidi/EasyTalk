@@ -106,7 +106,7 @@
 </template>
 
 <script setup>
-import {ElMessageBox} from "element-plus"
+import { ElMessageBox } from "element-plus";
 import CommentImage from "./CommentImage.vue";
 import PostComment from "./PostComment.vue";
 import { ref, getCurrentInstance, watch } from "vue";
@@ -140,23 +140,24 @@ const doLike = async (data) => {
       ElMessageBox.alert("请前往用户中心绑定学校", "提示", {
         "show-close": false,
         callback: (action) => {
-          router.go(-1);
+          router.push(`/user/${data.user_id}`);
         },
       });
+    } else {
+      let result = await proxy.Request({
+        url: api.doLike,
+        params: {
+          commentId: data.comment_id,
+        },
+        showLoading: false,
+      });
+      if (!result) {
+        return;
+      }
+      data.good_count = result.data.good_count;
+      data.haveliked = result.data.haveliked;
     }
   }
-  let result = await proxy.Request({
-    url: api.doLike,
-    params: {
-      commentId: data.comment_id,
-    },
-    showLoading: false,
-  });
-  if (!result) {
-    return;
-  }
-  data.good_count = result.data.good_count;
-  data.haveliked = result.data.haveliked;
 };
 // 回复提示文字
 const placeholderInfo = ref(null);

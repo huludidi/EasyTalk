@@ -110,7 +110,6 @@ interface RestaurantItem {
 }
 const restaurants = ref<RestaurantItem[]>([]);
 const querySearch = (queryString: string, cb: (arg: any) => void) => {
-  console.log(restaurants.value);
   let timeout: NodeJS.Timeout
   const results = queryString
     ? restaurants.value.filter(createFilter(queryString))
@@ -119,8 +118,6 @@ const querySearch = (queryString: string, cb: (arg: any) => void) => {
   timeout = setTimeout(() => {
     cb(results);
   }, 3000 * Math.random());
-
-  // cb(results);
 };
 const createFilter = (queryString: string) => {
   return (restaurant: RestaurantItem) => {
@@ -152,7 +149,6 @@ const loadSchoolInfo = async () => {
     return [];
   }
 };
-
 onMounted(async () => {
   const info = await loadSchoolInfo();
   restaurants.value = info;

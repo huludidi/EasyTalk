@@ -51,10 +51,13 @@
 </template>
 
 <script setup>
-import {ElMessageBox} from "element-plus"
+import { ElMessageBox } from "element-plus";
 import CommentImage from "./CommentImage.vue";
 import { ref, getCurrentInstance, watch } from "vue";
 import { useStore } from "vuex";
+import { useRouter, useRoute } from "vue-router";
+const router = useRouter();
+const route = useRoute();
 const store = useStore();
 const { proxy } = getCurrentInstance();
 const api = {
@@ -103,38 +106,39 @@ const emit = defineEmits(["postCommentFinish"]);
 //发布评论
 const postCommentDo = () => {
   formDataRef.value.validate(async (valid) => {
+    if (!valid) {
+      return;
+    }
     if (!props.userId) {
       store.commit("showLogin", true);
       return;
     } else {
       if (!store.getters.getLoginUserInfo.school) {
         ElMessageBox.alert("请先绑定学校", "提示", {
-          "show-close": false,
-          callback: (action) => {
-            router.go(-1);
+        "show-close": false,
+        callback: (action) => {
+          router.push(`/user/${props.userId}`);
           },
         });
+      } else {
+        let params = Object.assign({}, formData.value);
+        params.articleId = props.articleId;
+        params.pCommentId = props.pCommentId;
+        params.replyUserId = props.replyUserId;
+        let result = await proxy.Request({
+          url: api.postComment,
+          params: params,
+          showLoading: false,
+        });
+        if (!result) {
+          return;
+        }
+        proxy.Message.success("评论发表成功");
+        formDataRef.value.resetFields();
+        removeCommentImg();
+        emit("postCommentFinish", result.data);
       }
     }
-    if (!valid) {
-      return;
-    }
-    let params = Object.assign({}, formData.value);
-    params.articleId = props.articleId;
-    params.pCommentId = props.pCommentId;
-    params.replyUserId = props.replyUserId;
-    let result = await proxy.Request({
-      url: api.postComment,
-      params: params,
-      showLoading: false,
-    });
-    if (!result) {
-      return;
-    }
-    proxy.Message.success("评论发表成功");
-    formDataRef.value.resetFields();
-    removeCommentImg();
-    emit("postCommentFinish", result.data);
   });
 };
 

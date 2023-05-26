@@ -24,7 +24,10 @@
         <v-row no-gutters>
           <v-col cols="9">
             <v-sheet class="pa-2 ma1">
-              <ArticleListLoading v-if="loading" :loading="loading"></ArticleListLoading>
+              <ArticleListLoading
+                v-if="loading"
+                :loading="loading"
+              ></ArticleListLoading>
               <DataList :dataSource="articleListInfo" @loadData="loadArticle">
                 <template #default="{ data }">
                   <ArticleListItem :data="data"></ArticleListItem>
@@ -95,6 +98,7 @@
 </template>
 
 <script setup>
+import { ElMessageBox } from "element-plus";
 import Schoolsort from "./Schoolsort.vue";
 import ArticleListItem from "./ArticleListItem.vue";
 import { ref, getCurrentInstance, watch, onBeforeMount } from "vue";

@@ -219,13 +219,19 @@ watch(
   { immediate: true, deep: true }
 );
 const currentUserInfo = ref({});
+onMounted(
+  ()=>{
+    currentUserInfo.value=store.getters.getLoginUserInfo;
+  }
+)
 watch(
   ()=>store.state.loginUserInfo,
   (newVal,oldVal)=>{
     if(newVal){
       currentUserInfo.value=newVal
     }
-  }
+  },
+  {immediate:true,deep:true}
 )
 </script>
 

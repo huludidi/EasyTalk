@@ -66,7 +66,10 @@
                 class="send-email-btn"
                 type="primary"
                 size="large"
-                >获取验证码</el-button
+                :disabled="isBtnDisable"
+                >
+                {{ isBtnDisable ? `重新发送(${countdown}s)` : '获取验证码' }}
+                </el-button
               >
             </div>
             <el-popover placement="left" :width="450" size="large">
@@ -302,11 +305,28 @@ const changeCheckCode = () => {
   checkCodeUrl.value = api.checkCode + "?time=" + new Date().getTime();
 };
 // 发送邮箱验证码
+const isBtnDisable=ref(false);
+const countdown = ref(0)
 const sendEmailCode = (type) => {
   formDataRef.value.validateField("email", async (valid) => {
     if (!valid) {
       return;
     }
+     isBtnDisable.value = true
+
+    // 设置倒计时为 60 秒
+    countdown.value = 60
+
+    // 定时器，每秒更新一次 countdown，直到倒计时结束
+    let timer = setInterval(() => {
+      if (countdown.value > 0) {
+        countdown.value--
+      } else {
+        // 倒计时结束，启用按钮
+        isBtnDisable.value = false
+        clearInterval(timer)
+      }
+    }, 1000)
     //
     const params = Object.assign(
       {},
