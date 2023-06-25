@@ -46,8 +46,8 @@ const loadSchoolSort = async () => {
     items.push(dict);
     if (i !== keys.length - 1) {
       items.push({
-        type: "divider",
-        inset: true,
+        type: 'divider',
+        // inset: true,
       });
     }
   }

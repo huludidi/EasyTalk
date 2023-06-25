@@ -171,7 +171,7 @@
               <avatar
                 :userInfo="userInfo"
                 :class="`${
-                  isHovering ? 'animate__animated animate__rotateIn' : ''
+                  isHovering ? 'animate__animated animate__rubberBand' : ''
                 }`"
                 @mouseover="onMouseOver"
                 @mouseleave="onMouseLeave"
@@ -199,7 +199,7 @@
 </template>
 
 <script setup>
-import {ElMessageBox} from "element-plus"
+import { ElMessageBox } from "element-plus";
 import { useStore } from "vuex";
 import LoginAndRegister from "./LoginAndRegister.vue";
 import { ref, reactive, getCurrentInstance, onMounted, watch } from "vue";
@@ -389,8 +389,8 @@ const newPost = () => {
   if (!store.getters.getLoginUserInfo) {
     loginAndregister(1);
   } else {
-    if (!store.getters.getLoginUserInfo.school) {
-      ElMessageBox.alert("请先绑定学校", "提示", {
+    if (!store.getters.getLoginUserInfo.school||!store.getters.getLoginUserInfo.schoolEmail) {
+      ElMessageBox.alert("请先绑定学校及邮箱", "提示", {
         "show-close": false,
         callback: (action) => {
           router.go(-1);

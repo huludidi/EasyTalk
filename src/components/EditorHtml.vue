@@ -50,7 +50,23 @@ const editorConfig = {
       customInsert(responsData, insertFn) {
         if(responsData.code==200){
           insertFn(
-            proxy.globalInfo.imageUrl+responsData.date.fileName,
+            proxy.globalInfo.imageUrl+responsData.data.fileName,
+            "",
+            ""
+          );
+          return
+        }
+        proxy.Message.error(responsData.error)
+      },
+    },
+    uploadVideo: {
+      maxFileSize: 50 * 1024 * 1024,
+      server: "/api/file/uploadVideo",
+      fieldName: "file",
+      customInsert(responsData, insertFn) {
+        if(responsData.code==200){
+          insertFn(
+            proxy.globalInfo.videoUrl+responsData.data.fileName,
             "",
             ""
           );

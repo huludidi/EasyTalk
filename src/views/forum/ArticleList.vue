@@ -37,59 +37,75 @@
           </v-col>
           <v-col>
             <v-sheet class="ma2">
-              <v-card class="mx-auto" max-width="267px">
-                <v-img
-                  class="align-end text-white animate__animated animate__fadeInDown animate_duration-5s"
-                  src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
-                  cover
+              <v-hover v-slot="{ isHovering, props }">
+                <v-card
+                  class="mx-auto"
+                  max-width="267px"
+                  v-bind="props"
+                  :elevation="isHovering ? 15 : 5"
+                  :class="{ 'on-hover': isHovering }"
                 >
-                  <v-card-title>EasyTalk</v-card-title>
-                </v-img>
-
-                <v-card-text>
-                  <div :style="{ 'line-height': '30px', 'font-size': '16px' }">
-                    远离故土，旅居异乡，依然衷心向往家的温馨。身处五湖四海，亲友同袍的关怀，始终是留学路上最动人的风景。
-                  </div>
-                </v-card-text>
-                <div class="divider">
-                  <v-divider
-                    class="border-opacity-25"
-                    :style="{ 'margin-right': '30px' }"
-                  ></v-divider>
-                  <span :style="{ width: '100px', 'font-size': '13px' }"
-                    >计数</span
+                  <v-img
+                    class="align-end text-white animate__animated animate__fadeInDown animate_duration-5s"
+                    src="https://cdn.vuetifyjs.com/images/cards/docks.jpg"
+                    cover
                   >
-                  <v-divider
-                    class="border-opacity-25"
-                    :style="{ 'margin-left': '30px' }"
-                  ></v-divider>
-                </div>
-                <v-card-actions>
-                  <div class="count-panel">
+                    <v-card-title>EasyTalk</v-card-title>
+                  </v-img>
+
+                  <v-card-text>
                     <div
-                      class="count-item"
-                      v-for="(item, key) in articleData"
-                      :key="key"
+                      :style="{ 'line-height': '30px', 'font-size': '16px' }"
                     >
-                      <span style="margin-bottom: 10px">{{
-                        item.boardName
-                      }}</span>
-                      <v-chip
-                        color="rgb(50, 133, 255)"
-                        size="small"
-                        :style="{ 'justify-content': 'center' }"
-                        >{{ item.count }}</v-chip
-                      >
+                      远离故土，旅居异乡，依然衷心向往家的温馨。身处五湖四海，亲友同袍的关怀，始终是留学路上最动人的风景。
                     </div>
+                  </v-card-text>
+                  <div class="divider">
+                    <v-divider
+                      class="border-opacity-25"
+                      :style="{ 'margin-right': '30px' }"
+                    ></v-divider>
+                    <span :style="{ width: '100px', 'font-size': '13px' }"
+                      >计数</span
+                    >
+                    <v-divider
+                      class="border-opacity-25"
+                      :style="{ 'margin-left': '30px' }"
+                    ></v-divider>
                   </div>
-                </v-card-actions>
-              </v-card>
+                  <v-card-actions>
+                    <div class="count-panel">
+                      <div
+                        class="count-item"
+                        v-for="(item, key) in articleData"
+                        :key="key"
+                      >
+                        <span style="margin-bottom: 10px">{{
+                          item.boardName
+                        }}</span>
+                        <v-chip
+                          color="rgb(50, 133, 255)"
+                          size="small"
+                          :style="{ 'justify-content': 'center' }"
+                          >{{ item.count }}</v-chip
+                        >
+                      </div>
+                    </div>
+                  </v-card-actions>
+                </v-card>
+              </v-hover>
             </v-sheet>
-            <v-card class="ma2">
-              <v-sheet class="pa-2">
+            <v-sheet class="ma2">
+              <v-hover v-slot="{ isHovering, props }">
+              <v-card class="pa-2"
+                v-bind="props"
+                  :elevation="isHovering ? 15 : 5"
+                  :class="{ 'on-hover': isHovering }"
+              >
                 <Schoolsort></Schoolsort>
-              </v-sheet>
-            </v-card>
+              </v-card>
+              </v-hover>
+            </v-sheet>
           </v-col>
         </v-row>
       </div>

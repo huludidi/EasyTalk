@@ -63,7 +63,7 @@
         <!-- 昵称 -->
         <template #nickName="{ row }">
           {{ row.nick_name }}
-          <span v-if="row.sex">({{ row.sex == 0 ? "男" : "女" }})</span>
+          <span v-if="row.sex">({{ row.sex == 0 ? "女" : "男" }})</span>
         </template>
         <!-- 登录信息 -->
         <template #loginInfo="{ row }">

@@ -42,7 +42,8 @@ app.config.globalProperties.globalInfo = {
     bodyWidth: 1100,
     avatarUrl: "/api/file/getAvatar/",
     imageUrl:"/api/file/getImage/",
-    webDomain:"http://localhost:3004/"
+    webDomain:"http://localhost:3004/",
+    videoUrl:"/api/file/getVideo/"
 }
 
 app.config.globalProperties.Verify = Verify;

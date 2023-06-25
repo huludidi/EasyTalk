@@ -22,7 +22,7 @@
                 :src="proxy.globalInfo.avatarUrl + userInfo.userId"
               ></v-img>
             </v-avatar>
-            <h2>{{ userInfo.nickName }}</h2>
+            <h2 :style="{padding:'10px  0 0 0'}">{{ userInfo.nickName }}</h2>
             <v-divider class="my-3"></v-divider>
             <v-btn rounded variant="text" @click="goToUcenter"> 我的主页</v-btn>
             <v-divider v-if="userInfo.isAdmin" class="my-3"></v-divider>

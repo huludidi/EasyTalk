@@ -48,13 +48,20 @@
                         <v-icon icon="mdi mdi-eye-outline"> </v-icon>
                         <span>{{ articleInfo.read_count }}</span>
                       </div>
-                      <router-link
+                      <div
                         v-if="articleInfo.author_id == currentUserInfo.userId"
-                        :to="`/editPost/${articleInfo.article_id}`"
-                        class="a-link btn-edit"
                       >
-                        <span class="iconfont icon-edit">编辑</span>
-                      </router-link>
+                        <router-link
+                          :to="`/editPost/${articleInfo.article_id}`"
+                          class="a-link btn-edit"
+                        >
+                          <span class="iconfont icon-edit ">编辑  </span>
+                        </router-link>
+                        <span class="iconfont icon-del a-link btn-edit"
+                        @click="delarticle"
+                          >删除</span
+                        >
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -237,6 +244,7 @@ const api = {
   getUserInfo: "/ucenter/getUserInfo",
   downloadAttachment: "/api/forum/attachmentDownload",
   doLike: "/forum/doLike",
+  delArticle:"/forum/delArticle"
 };
 const currentUserInfo = ref({});
 watch(
@@ -387,6 +395,23 @@ const imagePreview = () => {
     previewImgList.value = imageList;
   });
 };
+// 删除自己的文章
+const delarticle=async()=>{
+   proxy.Confirm("你确定要删除此文章吗？", async () => {
+    let result=await proxy.Request({
+      url:api.delArticle,
+      showLoading:false,
+      params:{
+        articleId:articleInfo.value.article_id
+      }
+    })
+    if(!result){
+      return
+    }
+    proxy.Message.success("删除成功")
+    router.push("/")
+   })
+}
 </script>
 
 <style lang="scss">
@@ -439,6 +464,9 @@ const imagePreview = () => {
             align-items: flex-end;
             margin-left: 10px;
             margin-right: 10px;
+          }
+          .btn-edit{
+            cursor: pointer;
           }
           .post-address {
             margin-left: 10px;

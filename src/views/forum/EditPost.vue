@@ -304,7 +304,7 @@ const setHtmlContent = (HTMLContent) => {
       padding: 5px 10px 5px 10px;
     }
     .post-editor {
-      flex: 1;
+      width: 1057px;
       .post-editor-title {
         display: flex;
         justify-content: space-between;
@@ -318,7 +318,7 @@ const setHtmlContent = (HTMLContent) => {
       }
     }
     .post-setting {
-      margin-left: 10px;
+      margin-left: 20px;
       width: 450px;
       .setting-inner {
         max-height: calc(100vh - 100px);

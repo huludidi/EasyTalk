@@ -210,7 +210,7 @@
                   <el-dropdown-item @click="delArticle(row)">
                     删除
                   </el-dropdown-item>
-                  <el-dropdown-item @click="audit(row)" v-if="row.audit == 0">
+                  <el-dropdown-item @click="audit(row)" v-if="row.audit == 0||row.status==0">
                     审核通过
                   </el-dropdown-item>
                 </el-dropdown-menu>

@@ -7,7 +7,7 @@
             <v-card
               v-ripple="data.status==-1?'':{ center: true }"
               v-bind="data.status==-1?'': props"
-              :elevation="isHovering ? 20 : data.status==-1?0:1"
+              :elevation="isHovering ? 20 : data.status==-1?0:3"
               :class="data.status==-1?'':{ 'on-hover': isHovering }"
               class="mx-auto"
               max-width="1300"
