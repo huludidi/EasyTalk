@@ -320,7 +320,6 @@ const subselection = ref(0);
 watch(
   () => store.state.activeBoard,
   (newVal, oldVal) => {
-    console.log(newVal);
     if (newVal != oldVal) {
       selection.value = newVal;
     }

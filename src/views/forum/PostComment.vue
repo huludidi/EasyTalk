@@ -40,7 +40,7 @@
     </div>
     <div class="send-btn">
       <v-btn
-      :loading="postloading"
+        :loading="postloading"
         color="rgb(50, 133, 255)"
         variant="tonal"
         :style="{ height: '40px' }"
@@ -111,7 +111,7 @@ const rules = {
 const emit = defineEmits(["postCommentFinish"]);
 
 //发布评论
-const postloading=ref(false)
+const postloading = ref(false);
 const postCommentDo = () => {
   formDataRef.value.validate(async (valid) => {
     if (!valid) {
@@ -121,7 +121,10 @@ const postCommentDo = () => {
       store.commit("showLogin", true);
       return;
     } else {
-      if (!store.getters.getLoginUserInfo.school||!store.getters.getLoginUserInfo.schoolEmail) {
+      if (
+        !store.getters.getLoginUserInfo.school ||
+        !store.getters.getLoginUserInfo.schoolEmail
+      ) {
         ElMessageBox.alert("请先绑定学校及邮箱", "提示", {
           "show-close": false,
           callback: (action) => {
@@ -133,16 +136,19 @@ const postCommentDo = () => {
         params.articleId = props.articleId;
         params.pCommentId = props.pCommentId;
         params.replyUserId = props.replyUserId;
-        postloading.value=true
+        postloading.value = true;
         let result = await proxy.Request({
           url: api.postComment,
           params: params,
           showLoading: false,
+          errorCallback: (response) => {
+            postloading.value = false;
+          },
         });
         if (!result) {
           return;
         }
-        postloading.value=false
+        postloading.value = false;
         proxy.Message.success("评论发表成功");
         formDataRef.value.resetFields();
         removeCommentImg();

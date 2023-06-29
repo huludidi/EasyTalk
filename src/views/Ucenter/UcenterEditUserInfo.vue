@@ -51,7 +51,7 @@
           >去绑定</span
         >
       </el-form-item>
-      <el-form-item label="简介" prop="persondescription">
+      <el-form-item label="简介" prop="personDescription">
         <el-input
           clearable
           placeholder="请输入简介，让别人认识你！"
@@ -66,8 +66,7 @@
       </el-form-item>
     </el-form>
   </Dialog>
-  <!-- <ConfirmEmailCode ></ConfirmEmailCode> -->
-  <!-- 绑定邮箱弹窗 -->
+
   <Dialog
     top="30px"
     :show="dialogConfigBindEmail.show"
@@ -157,12 +156,13 @@ const rules = {
     { max: 15, message: "昵称过长" },
   ],
   school: [{ required: true, message: "请选择学校" }],
+  personDescription:[{required:true,message:"请输入点内容，让别人认识你"}]
 };
 const emailRules = {
   schoolEmail: [
     { required: true, message: "请输入学校邮箱" },
     { max: 100, message: "邮箱过长" },
-    // { validator: proxy.Verify.schoolEmail, message: "请输入教育邮箱" },
+    { validator: proxy.Verify.schoolEmail, message: "请输入教育邮箱" },
   ],
   emailCode: [{ required: true, message: "请输入验证码" }],
 };
@@ -203,7 +203,6 @@ const loadSchoolInfo = async () => {
       },
     });
     if (!result || !result.data || result.data.length === 0) {
-      console.error("Error: No data found.");
       return [];
     }
     const info = result.data.list.map((element: any) => ({
@@ -211,7 +210,6 @@ const loadSchoolInfo = async () => {
     }));
     return info;
   } catch (error) {
-    console.error(error);
     return [];
   }
 };
@@ -286,7 +284,6 @@ const cencelbind=()=>{
     formData.value.schoolEmail=null;
     store.commit("updateloginUserInfo",result.data);
     proxy.Message.success("解绑成功");
-    console.log(store.getters.getLoginUserInfo)
   });
 }
 
@@ -368,6 +365,7 @@ const bindEmailHandler = () => {
     formData.value.schoolEmail = emailformData.value.schoolEmail;
     proxy.Message.success("邮箱绑定成功");
     dialogConfigBindEmail.show = false;
+    store.commit("updateloginUserInfo", result.data);
   });
 };
 </script>

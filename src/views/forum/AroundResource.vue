@@ -58,7 +58,6 @@ onMounted(() => {
 watch(
   () => selection.value,
   (newVal, oldVal) => {
-    console.log(newVal);
     formData.value.target = newVal;
     loadDataList();
   }
@@ -77,7 +76,6 @@ const loadDataList = async () => {
     return;
   }
   dataList.value = result.data;
-  console.log(dataList);
 };
 const searchResource = () => {
   loadDataList();

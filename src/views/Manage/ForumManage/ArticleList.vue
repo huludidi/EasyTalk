@@ -362,7 +362,6 @@ const setRowSelected = (rows) => {
   rows.forEach((element) => {
     seleckBatchList.value.push(element.article_id);
   });
-  console.log(seleckBatchList.value);
 };
 // 批量审批
 const auditBatch = () => {
@@ -433,7 +432,6 @@ const showComment = (id) => {
 // 查看附件
 const articleAttachmentRef=ref();
 const showAttachment = (nickName, articleId) => {
-  console.log(articleId)
   articleAttachmentRef.value.show(nickName, articleId);
 };
 </script>

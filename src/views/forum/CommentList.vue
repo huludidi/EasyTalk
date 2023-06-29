@@ -101,12 +101,12 @@ const loadComment = async () => {
 };
 loadComment();
 
-const emit=defineEmits(["updateCommentCount"])
+const emit = defineEmits(["updateCommentCount"]);
 // 评论发布完成
 const postCommentFinish = (resultData) => {
   commentListInfo.value.list.unshift(resultData);
-  commentListInfo.value.totalCount+=1;
-  emit("updateCommentCount")
+  commentListInfo.value.totalCount += 1;
+  emit("updateCommentCount");
 };
 // 隐藏所有回复框
 const hiddenAllReplyHandler = () => {

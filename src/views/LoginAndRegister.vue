@@ -338,7 +338,7 @@ const sendEmailCode = (type) => {
       errorCallback: () => {
         changeCheckCode();
       },
-      showLoading:false
+      showLoading: false,
     });
     if (!result) {
       return;

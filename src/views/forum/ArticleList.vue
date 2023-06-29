@@ -97,13 +97,14 @@
             </v-sheet>
             <v-sheet class="ma2">
               <v-hover v-slot="{ isHovering, props }">
-              <v-card class="pa-2"
-                v-bind="props"
+                <v-card
+                  class="pa-2"
+                  v-bind="props"
                   :elevation="isHovering ? 15 : 5"
                   :class="{ 'on-hover': isHovering }"
-              >
-                <Schoolsort></Schoolsort>
-              </v-card>
+                >
+                  <Schoolsort></Schoolsort>
+                </v-card>
               </v-hover>
             </v-sheet>
           </v-col>
@@ -195,17 +196,22 @@ watch(
 // 文章筛选 0同校 1同城
 const filter = ref([]);
 watch(
-  () => filter,
+  () => filter.value,
   (newVal, oldVal) => {
-    if (!filter.value) {
+    if (!store.getters.getLoginUserInfo) {
+      store.commit("showLogin", true);
+      filter.value = [];
+      return;
+    }
+    if (!newVal) {
       filterType.value = null;
     } else {
-      filterType.value = filter.value;
+      filterType.value = newVal;
     }
     articleListInfo.value.pageNo = 1;
     loadArticle();
   },
-  { immediate: true, deep: true }
+  { deep: true }
 );
 // 右侧文章统计数据
 const articleData = ref({});
@@ -230,7 +236,7 @@ loadArticleData();
       background: #fff;
       display: inline-flex;
       .v-btn-group--density-default.v-btn-group {
-        height: 25px;
+        height: 30px;
       }
       .filterate {
         margin-left: 440px;

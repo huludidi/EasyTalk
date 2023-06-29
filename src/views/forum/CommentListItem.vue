@@ -66,8 +66,18 @@
                 item.reply_nick_name
               }}</span>
               <span>：</span>
-              <span class="sub-content">{{ item.content }}</span>
             </div>
+              <span class="sub-content">
+                <span v-html="item.content"></span>
+                <CommentImage
+                  :style="{ 'margin-top': '10px' }"
+                  v-if="item.img_path"
+                  :src="
+                    proxy.globalInfo.imageUrl + item.img_path.replace('.', '_.')
+                  "
+                  :imgList="[proxy.globalInfo.imageUrl + item.img_path]"
+                ></CommentImage>
+              </span>
             <div class="op-panel">
               <div class="time">
                 <span>{{ item.post_time }}</span>
@@ -194,6 +204,7 @@ const gotoUcenter = (userId) => {
 
 <style lang="scss" scoped>
 .comment-item {
+  padding-top: 8px;
   display: flex;
   .comment-info {
     flex: 1;
@@ -248,12 +259,14 @@ const gotoUcenter = (userId) => {
         font-size: 14px;
         .comment-sub-info {
           margin-left: 5px;
+          .sub-content {
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+          }
           .nick-name {
             .reply-name {
               margin: 0px 5px;
-            }
-            .sub-content {
-              font-size: 15px;
             }
           }
         }
